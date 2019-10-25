@@ -1,0 +1,8 @@
+[general]
+arch = x86_64
+family = RHCOS
+platforms = x86_64
+version =  4.2
+[images-x86_64]
+initrd = rhcos-4.2.0-x86_64-installer-initramfs.img
+kernel = rhcos-4.2.0-x86_64-installer-kernel

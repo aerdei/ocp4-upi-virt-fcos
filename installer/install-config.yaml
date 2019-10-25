@@ -1,0 +1,24 @@
+apiVersion: v1
+baseDomain: kahvi.online
+compute:
+- hyperthreading: Enabled   
+  name: worker
+  replicas: 0 
+controlPlane:
+  hyperthreading: Enabled   
+  name: master 
+  replicas: 3 
+metadata:
+  name: ocp
+networking:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14 
+    hostPrefix: 23 
+  networkType: OpenShiftSDN
+  serviceNetwork: 
+  - 172.30.0.0/16
+platform:
+  none: {} 
+pullSecret: '***REMOVED***
+'
+sshKey: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4FF95j//GiJWI6kOi9T2Rc82vojx4KHBQ1I0MG+B5oTO/ttMtm0oSkCpP5g1GjQuNpuinXJUlMsJHB27ThhRQhBSfnXdWu39hoSCUT5K2RjL9NGWp6LIZsLN8cqql3uO0bf6yamX0a/KKKWj7pLKlK/N5hbdGT8c7x6uHK1oAQCCrFw6xhjdpXLu6N42xNSDZhBulTE9AjGFbd8U1+VNZb8OBg6Wt2ThOi0H0evk+9g4ojBndfTXcYRqPTV4+Kkh6SF+u4ew29Um0kh4749326M67/Azl2Gn9evkTiCzFZnTtSlc2F6JFa9Vcybh6N2oI6isb9V/ikLiUeU7PLRlZ root@CentOS-76-64-minimal'
