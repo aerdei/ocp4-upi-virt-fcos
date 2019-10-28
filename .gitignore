@@ -1,0 +1,7 @@
+*.tar.gz
+*.iso
+*.img
+*-kernel
+kubectl
+oc
+openshift-install
