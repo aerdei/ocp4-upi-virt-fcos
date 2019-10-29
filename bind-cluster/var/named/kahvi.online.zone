@@ -1,32 +1,31 @@
-; Authoritative data for ocp-example.com zone
+; Authoritative data for kahvi.online zone
 ;
+$ORIGIN kahvi.online.
 $TTL 1D
-@   IN SOA  kahvi.online.   root.kahvi.online. (
-                                       2019102101      ; serial
-                                       1D              ; refresh
-                                       1H              ; retry
-                                       1W              ; expire
-                                       3H )            ; minimum
+@		IN	SOA	dns.kahvi.online.	root.kahvi.online. (
+						2019102904      ; serial
+						3600            ; refresh
+						1800            ; retry
+						1W              ; expire
+						3H )            ; minimum
 
-$ORIGIN         kahvi.online.
-kahvi.online.               IN      NS      root.kahvi.online.
-root                        IN      A       127.0.0.1
-ocp 		 	    IN	    A       192.168.122.1
-api.ocp         	    IN      A       192.168.122.53
-api-int.ocp	            IN      A       192.168.122.53
-*.apps.ocp                  IN      A       192.168.122.53
-bootstrap.ocp		    IN      A       192.168.122.100
-etcd-0.ocp		    IN      A       192.168.122.110
-master-0.ocp		    IN      A       192.168.122.110
-etcd-1.ocp       	    IN      A       192.168.122.111
-master-1.ocp       	    IN      A       192.168.122.111
-etcd-2.ocp	            IN      A       192.168.122.112
-master-2.ocp	            IN      A       192.168.122.112
-worker-0.ocp	            IN      A       192.168.122.120
-worker-1.ocp	            IN      A       192.168.122.121
+		IN	NS	dns.kahvi.online.
+dns		IN	A	192.168.122.53
+
+ocp 		IN	A	192.168.122.1
+api.ocp		IN	A	192.168.122.53
+api-int.ocp	IN	A	192.168.122.53
+*.apps.ocp	IN	A	192.168.122.53
+bootstrap.ocp	IN	A	192.168.122.100
+etcd-0.ocp	IN	A	192.168.122.110
+master-0.ocp	IN	A	192.168.122.110
+etcd-1.ocp	IN	A	192.168.122.111
+master-1.ocp	IN	A	192.168.122.111
+etcd-2.ocp	IN	A	192.168.122.112
+master-2.ocp	IN	A	192.168.122.112
+worker-0.ocp	IN	A	192.168.122.120
+worker-1.ocp	IN	A	192.168.122.121
 ; _service.prot.owner-name                          class   rr      pri  weight  port  target
 _etcd-server-ssl._tcp.ocp.kahvi.online.	86400       IN      SRV     0    10      2380  etcd-0.ocp.kahvi.online.
 _etcd-server-ssl._tcp.ocp.kahvi.online.	86400	    IN      SRV     0    10      2380  etcd-1.ocp.kahvi.online.
 _etcd-server-ssl._tcp.ocp.kahvi.online.	86400	    IN      SRV     0    10      2380  etcd-2.ocp.kahvi.online.
-; Mail server MX record
-;example.com.            IN      MX      10      mail.example.com.
