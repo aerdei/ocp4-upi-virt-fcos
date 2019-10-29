@@ -1,0 +1,18 @@
+$TTL 1D
+@	IN	SOA	dns.kahvi.online.	root.kahvi.online. (
+						2019102905      ; serial
+						3600            ; refresh
+						1800            ; retry
+						1W              ; expire
+						3H )            ; minimum
+
+@	IN	NS	dns.
+53	IN	PTR	dns.kahvi.online.
+
+53	IN	PTR	api.ocp.kahvi.online.
+100	IN	PTR	bootstrap.ocp.kahvi.online.
+110	IN	PTR	master-0.ocp.kahvi.online.
+111	IN	PTR	master-1.ocp.kahvi.online.
+112	IN	PTR	master-2.ocp.kahvi.online.
+120	IN	PTR	worker-0.ocp.kahvi.online.
+121	IN	PTR	worker-1.ocp.kahvi.online.
