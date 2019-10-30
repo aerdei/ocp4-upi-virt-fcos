@@ -5,3 +5,4 @@
 kubectl
 oc
 openshift-install
+installer/install-files/*
