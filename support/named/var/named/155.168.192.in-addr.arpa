@@ -1,6 +1,6 @@
 $TTL 1D
 @	IN	SOA	dns.kahvi.online.	root.kahvi.online. (
-						2019102906      ; serial
+						2019110501      ; serial
 						3600            ; refresh
 						1800            ; retry
 						1W              ; expire
