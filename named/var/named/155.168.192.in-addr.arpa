@@ -9,9 +9,6 @@ $TTL 1D
 @	IN	NS	dns.
 53	IN	PTR	dns.kahvi.online.
 
-1	IN	PTR	ocp.kahvi.online.
-53	IN	PTR	api.ocp.kahvi.online.
-53	IN	PTR	support.ocp.kahvi.online.
 100	IN	PTR	bootstrap.ocp.kahvi.online.
 110	IN	PTR	master-0.ocp.kahvi.online.
 111	IN	PTR	master-1.ocp.kahvi.online.
