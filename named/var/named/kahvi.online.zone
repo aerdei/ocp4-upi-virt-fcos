@@ -12,7 +12,7 @@ $TTL 1D
 		IN	NS	dns.kahvi.online.
 dns		IN	A	192.168.155.53
 
-ocp 		IN	A	192.168.155.1
+ocp 		IN	A	192.168.155.53
 support.ocp	IN	A	192.168.155.53
 api.ocp		IN	A	192.168.155.53
 api-int.ocp	IN	A	192.168.155.53
