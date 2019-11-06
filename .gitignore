@@ -6,3 +6,4 @@ kubectl
 oc
 openshift-install
 installer/install-files/*
+*.retry
