@@ -1,0 +1,18 @@
+---
+- name: Collect configs from support VM 
+  copy: 
+    src: {{ item.src }}
+    dest: {{ item.dest }}
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - { src: '/etc/named.conf', dest: 'named/etc/named.conf' }
+    - { src: '/var/named/155.168.192.in-addr.arpa', dest: 'named/var/named/155.168.192.in-addr.arpa' }
+    - { src: '/var/named/kahvi.online.zone', dest: 'named/var/named/kahvi.online.zone' }
+    - { src: '/etc/chrony.conf', dest: 'chronyd/etc/chrony.conf' }
+    - { src: '/etc/chrony.conf', dest: 'chronyd/etc/chrony.conf' }
+    - { src: '/etc/dhcpd/dhcpd.conf', dest: 'dhcpd/etc/dhcpd/dhcpd.conf' }
+    - { src: '/etc/haproxy.cfg', dest: 'haproxy/etc/haproxy/haproxy.cfg' }
+    - { src: '/etc/httpd/conf/httpd.conf', dest: 'httpd/etc/httpd/conf/httpd.con' }
+...

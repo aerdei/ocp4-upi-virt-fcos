@@ -14,6 +14,6 @@ export KUBECONFIG=/root/ocp4-upi-local/installer/install-files/auth/kubeconfig
 oc get csr -o name | xargs -i oc adm certificate approve {}
 bash deploy.sh workers
 bash start.sh
-oc get csr -o go-template --template='{{range .items}}{{if  not .status}}{{printf %s\n .metadata.name}}{{end}}{{end}}' | xargs -i oc adm certificate approve {}
+oc get csr -o go-template --template='{{range .items}}{{if  not .status}}{{printf "%s\n" .metadata.name}}{{end}}{{end}}' | xargs -i oc adm certificate approve {}
 export KUBECONFIG=/root/ocp4-upi-local/installer/install-files/auth/kubeconfig
 ```
