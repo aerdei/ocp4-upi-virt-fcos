@@ -1,0 +1,427 @@
+variant: fcos
+version: 1.0.0
+storage:
+  directories:
+  - path: /opt/services/httpd
+    mode:  0755
+    user:
+      name: core
+    group:
+      name: core
+  files:
+  - path: /etc/hostname
+    overwrite: true
+    user:
+      name: core
+    contents:
+      inline: "fedora-coreos" 
+    mode: 0644
+  - path: /opt/services/haproxy/haproxy.cfg
+    overwrite: true
+    user:
+      name: core
+    contents:
+      inline: |
+        global
+            daemon
+            maxconn 256
+     
+        defaults
+                log global
+                timeout connect 10s
+                timeout client 30s
+                timeout server 30s
+                mode tcp
+        
+        backend bootstrap_masters_22623
+                mode tcp
+                balance source
+                server bootstrap 192.168.155.100:22623 check 
+                server master0 192.168.155.110:22623 check
+                server master1 192.168.155.111:22623 check
+                server master2 192.168.155.112:22623 check
+        
+        backend bootstrap_masters_6443
+                mode tcp
+                balance source
+                server bootstrap 192.168.155.100:6443 check
+                server master0 192.168.155.110:6443 check
+                server master1 192.168.155.111:6443 check
+                server master2 192.168.155.112:6443 check
+        
+        backend workers_80
+                mode tcp
+                balance source
+                server worker0 192.168.155.120:80 check
+                server worker1 192.168.155.121:80 check
+        
+        backend workers_443
+                mode tcp
+                balance source
+                server worker0 192.168.155.120:443 check
+                server worker1 192.168.155.121:443 check
+        
+        frontend api_6443
+                mode tcp
+                bind *:6443
+                use_backend bootstrap_masters_6443
+        
+        frontend api_22623 
+                mode tcp
+                bind *:22623
+                use_backend bootstrap_masters_22623
+        
+        frontend workers_443
+                mode tcp
+                bind *:443
+                use_backend workers_443
+        
+        frontend workers_80
+                mode tcp
+                bind *:80
+                use_backend workers_80
+    mode: 0644
+  - path: /opt/services/httpd/index.html
+    overwrite: true
+    user:
+      name: core
+    group:
+      name: core
+    contents:
+      inline: |
+        Hello from FCOS!
+    mode: 0644
+  - path: /opt/services/dhcpd/dhcpd.conf
+    mode: 0644
+    overwrite: true
+    user:
+      name: core
+    contents:
+      inline: |
+        # dhcpd.conf
+        #
+        # Sample configuration file for ISC dhcpd
+        #
+        
+        # option definitions common to all supported networks...
+        option domain-name "kahvi.online";
+        option domain-name-servers 192.168.155.53;
+        option ntp-servers 192.168.155.53;
+        option routers 192.168.155.1;
+        default-lease-time 14400;
+        max-lease-time 14400;
+        
+        # Use this to enble / disable dynamic dns updates globally.
+        ddns-update-style interim;
+        
+        # If this DHCP server is the official DHCP server for the local
+        # network, the authoritative directive should be uncommented.
+        authoritative;
+        
+        # Use this to send dhcp log messages to a different log file (you also
+        # have to hack syslog.conf to complete the redirection).
+        log-facility local7;
+        
+        subnet 192.168.155.0 netmask 255.255.255.0 {
+          range 192.168.155.2 192.168.155.99;
+          option broadcast-address 192.168.155.255;
+        }
+        #Bootstrap
+        host bootstrap {
+          hardware ethernet 12:34:56:00:00:00;
+          fixed-address 192.168.155.100;
+          option host-name "bootstrap.ocp.kahvi.online";
+        }
+        #Masters
+        host master-0 {
+          hardware ethernet 12:34:56:00:00:10;
+          fixed-address 192.168.155.110;
+          option host-name "master-0.ocp.kahvi.online";
+        }
+        host master-1 {
+          hardware ethernet 12:34:56:00:00:11;
+          fixed-address 192.168.155.111;
+          option host-name "master-1.ocp.kahvi.online";
+        }
+        host master-2 {
+          hardware ethernet 12:34:56:00:00:12;
+          fixed-address 192.168.155.112;
+          option host-name "master-2.ocp.kahvi.online";
+        }
+        #Workers
+        host worker-0 {
+          hardware ethernet 12:34:56:00:00:20;
+          fixed-address 192.168.155.120;
+          option host-name "worker-0.ocp.kahvi.online";
+        }
+        host worker-1 {
+          hardware ethernet 12:34:56:00:00:21;
+          fixed-address 192.168.155.121;
+          option host-name "worker-1.ocp.kahvi.online";
+        }
+  - path: /opt/services/named/named.conf
+    mode: 0644
+    overwrite: true
+    user:
+      name: core
+    contents:
+      inline: |
+        //
+        // named.conf
+        // Provided by Red Hat bind package to configure the ISC BIND named(8) DNS
+        // server as a caching only name server (as a localhost DNS resolver only).
+        // See /usr/share/doc/bind*/sample/ for example named configuration files.
+        //
+        //
+        
+        options {
+                listen-on port 53 { any; };
+        //      listen-on-v6 port 53 { ::1; };
+                forwarders { 192.168.122.1; };
+                directory       "/var/named";
+                dump-file       "/var/named/data/cache_dump.db";
+                statistics-file "/var/named/data/named_stats.txt";
+                memstatistics-file "/var/named/data/named_mem_stats.txt";
+                allow-query     { localhost; 192.168.0.0/16; 10.0.0.0/8; };
+                recursion yes;
+        
+        
+                dnssec-enable yes;
+                dnssec-validation yes;
+                dnssec-lookaside auto;
+        
+        
+                /* Path to ISC DLV key */
+                bindkeys-file "/etc/named.iscdlv.key";
+        
+        
+                managed-keys-directory "/var/named/dynamic";
+        };
+          //  logging{
+        //    channel simple_log {
+        //      file "/var/log/named/bind.log" versions 3 size 5m;
+        //      severity info;
+        //      print-time yes;
+        //      print-severity yes;
+        //      print-category yes;
+        //    };
+        //    channel query_log {
+        //      file "/var/log/named/query.log" versions 3 size 5m;
+        //      severity info;
+        //      print-time yes;
+        //      print-severity yes;
+        //      print-category yes;
+        //    };
+        //    category default{
+        //      simple_log;
+        //    };
+        //    category queries{
+        //      query_log;
+        //    };
+        //  };
+        zone "." IN {
+                type hint;
+                file "named.ca";
+        };
+        
+        zone "kahvi.online" IN {
+                type master;
+                file "/opt/kahvi.online.zone";
+        };
+        
+        zone "155.168.192.in-addr.arpa" IN {
+                type master;
+                file "/opt/155.168.192.in-addr.arpa";
+        };
+        
+        include "/etc/named.rfc1912.zones";
+        include "/etc/named.root.key";
+  - path: /opt/services/named/kahvi.online.zone
+    mode: 0644
+    overwrite: true
+    user:
+      name: core
+    contents:
+      inline: |
+        ; Authoritative data for kahvi.online zone
+        ;
+        $ORIGIN kahvi.online.
+        $TTL 1D
+        @		IN	SOA	dns.kahvi.online.	root.kahvi.online. (
+        						2019110501      ; serial
+        						3600            ; refresh
+        						1800            ; retry
+        						1W              ; expire
+        						3H )            ; minimum
+        
+        		IN	NS	dns.kahvi.online.
+        dns		IN	A	192.168.155.53
+        
+        ocp 		IN	A	192.168.155.53
+        support.ocp	IN	A	192.168.155.53
+        api.ocp		IN	A	192.168.155.53
+        api-int.ocp	IN	A	192.168.155.53
+        *.apps.ocp	IN	A	192.168.155.53
+        bootstrap.ocp	IN	A	192.168.155.100
+        etcd-0.ocp	IN	A	192.168.155.110
+        master-0.ocp	IN	A	192.168.155.110
+        etcd-1.ocp	IN	A	192.168.155.111
+        master-1.ocp	IN	A	192.168.155.111
+        etcd-2.ocp	IN	A	192.168.155.112
+        master-2.ocp	IN	A	192.168.155.112
+        worker-0.ocp	IN	A	192.168.155.120
+        worker-1.ocp	IN	A	192.168.155.121
+        ; _service.prot.owner-name                          class   rr      pri  weight  port  target
+        _etcd-server-ssl._tcp.ocp.kahvi.online.	86400       IN      SRV     0    10      2380  etcd-0.ocp.kahvi.online.
+        _etcd-server-ssl._tcp.ocp.kahvi.online.	86400	    IN      SRV     0    10      2380  etcd-1.ocp.kahvi.online.
+        _etcd-server-ssl._tcp.ocp.kahvi.online.	86400	    IN      SRV     0    10      2380  etcd-2.ocp.kahvi.online.
+  - path: /opt/services/named/155.168.192.in-addr.arpa
+    mode: 0644
+    overwrite: true
+    user:
+      name: core
+    contents:
+      inline: |
+        $TTL 1D
+        @	IN	SOA	dns.kahvi.online.	root.kahvi.online. (
+        						2019110501      ; serial
+        						3600            ; refresh
+        						1800            ; retry
+        						1W              ; expire
+        						3H )            ; minimum
+        
+        @	IN	NS	dns.
+        53	IN	PTR	dns.kahvi.online.
+        
+        100	IN	PTR	bootstrap.ocp.kahvi.online.
+        110	IN	PTR	master-0.ocp.kahvi.online.
+        111	IN	PTR	master-1.ocp.kahvi.online.
+        112	IN	PTR	master-2.ocp.kahvi.online.
+        120	IN	PTR	worker-0.ocp.kahvi.online.
+        121	IN	PTR	worker-1.ocp.kahvi.online.
+        
+
+  - path: "/etc/NetworkManager/system-connections/Wired connection 2.nmconnection"
+    mode: 0600
+    overwrite: true
+    user:
+      name: root
+    contents: 
+      inline: |
+        [connection]
+        type=802-3-ethernet
+        autoconnect-priority=-999
+        interface-name=eth1
+        permissions=
+        autoconnect=true
+        id=Wired connection 2
+        
+        [802-3-ethernet]
+        mac-address-blacklist=
+        mac-address=12:34:56:00:00:75
+        [ipv4]
+        address1=192.168.155.53/32
+        dns-search=
+        method=manual
+        
+        [ipv6]
+        addr-gen-mode=stable-privacy
+        dns-search=
+        method=auto
+        
+        [proxy]
+  - path: /etc/NetworkManager/dispatcher.d/01-eth1-route
+    mode: 0744
+    overwrite: true
+    user:
+      name: root
+    contents: 
+      inline: |
+        #!/usr/bin/env bash
+        
+        interface=$1
+        event=$2
+        
+        if [[ $interface != "eth1" ]] && [[ $event != "up" ]]
+        then
+          route add -net 192.168.155.0/24 dev eth1
+        fi
+         
+passwd:
+  users:
+    - name: core
+      password_hash: "$1$gVS./087$3aAcWMmCfaprNE6rb74j3 0"
+      ssh_authorized_keys:
+      - "YourPublicSSHKeyHere"
+systemd:
+  units:
+    - name: httpd-container.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=HTTPD-container
+        After=network-online.target
+        Wants=network-online.target
+
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill httpd-service
+        ExecStartPre=-/bin/podman rm httpd-service
+        ExecStartPre=/bin/podman pull httpd:2.4
+        ExecStartPre=/bin/chcon -R -t httpd_sys_content_t /opt/services/httpd
+        ExecStart=/bin/podman run --name httpd-service -v /opt/services/httpd/:/usr/local/apache2/htdocs/ -p 8080:80 httpd:2.4 
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: haproxy-container.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=HAProxy-container
+        After=httpd-container.service
+        Wants=network-online.target
+
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill haproxy-service
+        ExecStartPre=-/bin/podman rm haproxy-service
+        ExecStartPre=/bin/podman pull haproxy:2.1.2
+        ExecStart=/bin/podman run --name haproxy-service  -v /opt/services/haproxy/:/usr/local/etc/haproxy:z --net host -p 443:443 -p 80:80 haproxy:2.1.2
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: dhcpd-container.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=DHCPD-container
+        After=haproxy-container.service
+        Wants=network-online.target
+
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill dhcpd-service
+        ExecStartPre=-/bin/podman rm dhcpd-service
+        ExecStartPre=/bin/podman pull quay.io/aerdei-redhat.com/fedora-dhcpd:v0.0.1
+        ExecStart=/bin/podman run --name dhcpd-service -v /opt/services/dhcpd/:/opt/:z --net host -p 67:67 quay.io/aerdei-redhat.com/fedora-dhcpd:v0.0.1 /usr/sbin/dhcpd -4 -f -d --no-pid -cf "/opt/dhcpd.conf" eth1
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: named-container.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Named-container
+        After=dhcpd-container.service
+        Wants=network-online.target
+
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill named-service
+        ExecStartPre=-/bin/podman rm named-service
+        ExecStartPre=/bin/podman pull quay.io/aerdei-redhat.com/fedora-named:v0.0.1
+        ExecStart=/bin/podman run --name named-service -v /opt/services/named/:/opt/:z --net host -p 53:53 quay.io/aerdei-redhat.com/fedora-named:v0.0.1 /usr/sbin/named -c "/opt/named.conf"
+
+        [Install]
+        WantedBy=multi-user.target
+
