@@ -43,12 +43,14 @@ When the utility node is up, you can start preparing the OpenShift installation.
 
 Create the image mirror on the utility node.  
 Mirror the images.  
-Extract and download the installer to the host.  
+Extract the installer and download it to the host.  
+Configure `install-config.yaml` in the `cluster` directory.  
 Create installer files and upload them to the utility VM:
 ```bash
 ./openshift-install create manifests --dir=cluster/
 sed -i 's/mastersSchedulable: true/mastersSchedulable: false/g' cluster/manifests/cluster-scheduler-02-config.yml
 ./openshift-install create ignition-configs --dir=cluster/
+scp -r install-files/* core@192.168.122.53:/opt/services/httpd/www/html/
 ```
 Prepare RHCOS images for the install in the `iso_rhcos` directory.
 
