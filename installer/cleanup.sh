@@ -1,1 +1,0 @@
-virsh list --all --name | grep ".ocp.kahvi.online" | xargs -i shell -c "virsh destroy {}; virsh undefine {}"
