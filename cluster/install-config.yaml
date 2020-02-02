@@ -23,12 +23,12 @@ additionalTrustBundle: |
   -----BEGIN CERTIFICATE-----
   .........................
   -----END CERTIFICATE-----
-pullSecret: '{"auths":{"support.ocp.kahvi.online:5000":{"auth":"YWVyZGVpOnIzZGg0dA=="}}}'
+pullSecret: '{"auths":{"utility.ocp.kahvi.online:5000":{"auth":"YWVyZGVpOnIzZGg0dA=="}}}'
 imageContentSources:
 - mirrors:
-  - support.ocp.kahvi.online:5000/ocp4/openshift4
+  - utility.ocp.kahvi.online:5000/ocp4/openshift4
   source: quay.io/openshift-release-dev/ocp-release
 - mirrors:
-  - support.ocp.kahvi.online:5000/ocp4/openshift4
+  - utility.ocp.kahvi.online:5000/ocp4/openshift4
   source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
-sshKey: 'SupportSSHKeyHere'
+sshKey: 'UtilitySSHKeyHere'
