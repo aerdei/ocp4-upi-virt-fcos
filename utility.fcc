@@ -15,6 +15,24 @@ storage:
         name: core
       group:
         name: core
+    - path: /opt/services/registry/auth
+      mode: 0755
+      user:
+        name: core
+      group:
+        name: core
+    - path: /opt/services/registry/certs
+      mode: 0755
+      user:
+        name: core
+      group:
+        name: core
+    - path: /opt/services/registry/data
+      mode: 0755
+      user:
+        name: core
+      group:
+        name: core
   files:
     - path: /etc/hostname
       overwrite: true
@@ -316,7 +334,7 @@ storage:
           id=Wired connection 2
           [802-3-ethernet]
           mac-address-blacklist=
-          mac-address=12:34:56:00:00:75
+          mac-address=12:34:56:00:00:54
           [ipv4]
           address1=192.168.155.53/32
           dns-search=
@@ -340,6 +358,14 @@ storage:
           then
             route add -net 192.168.155.0/24 dev eth1
           fi
+    - path: /opt/services/registry/auth/htpasswd
+      mode: 0744
+      overwrite: true
+      user:
+        name: core
+      contents:
+        inline: |
+          ocp:$2y$05$ZjDsu1eW1zEiwrtky0L6Qe2nLKk8cUogiWZibWsN6GxrugLxpaNM2
 passwd:
   users:
     - name: core
@@ -361,7 +387,7 @@ systemd:
         ExecStartPre=-/bin/podman rm httpd-service
         ExecStartPre=/bin/podman pull quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1
         ExecStartPre=/bin/chcon -R -t httpd_sys_content_t /opt/services/httpd
-        ExecStart=/bin/podman run --name httpd-service -v /opt/services/httpd/conf:/etc/httpd/conf:z -v /opt/services/httpd/www/html:/var/www/html/:z -net host -p 8080:8080 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/sbin/httpd -DFOREGROUND -DNO_DETACH
+        ExecStart=/bin/podman run --name httpd-service -v /opt/services/httpd/conf:/etc/httpd/conf:z -v /opt/services/httpd/www/html:/var/www/html/:z --net host -p 8080:8080 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/sbin/httpd -DFOREGROUND -DNO_DETACH
         [Install]
         WantedBy=multi-user.target
     - name: haproxy-container.service
@@ -404,6 +430,49 @@ systemd:
         ExecStartPre=-/bin/podman kill named-service
         ExecStartPre=-/bin/podman rm named-service
         ExecStart=/bin/podman run --name named-service -v /opt/services/named/:/opt/:z --net host -p 53:53 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/sbin/named -c "/opt/named.conf" -f
+        [Install]
+        WantedBy=multi-user.target
+    - name: client-downloader-container.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Client-downloader-container
+        After=named-container.service
+        Wants=network-online.target
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill client-downloader-service
+        ExecStartPre=-/bin/podman rm client-downloader-service
+        ExecStart=/bin/podman run --name client-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux-4.3.0.tar.gz | /usr/bin/tar -xvz -C /opt/'
+        [Install]
+        WantedBy=multi-user.target
+    - name: tarball-downloader-container.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Tarball-downloader-container
+        After=named-container.service
+        Wants=network-online.target
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill tarball-downloader-service
+        ExecStartPre=-/bin/podman rm tarball-downloader-service
+        ExecStart=/bin/podman run --name tarball-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/latest/latest/rhcos-4.3.0-x86_64-metal.raw.gz -o /opt/rhcos-4.3.0-x86_64-metal.raw.gz
+        [Install]
+        WantedBy=multi-user.target
+    - name: image-mirror.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Image-mirror-container
+        After=named-container.service
+        Wants=network-online.target
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill image-mirror-service
+        ExecStartPre=-/bin/podman rm image-mirror-service
+        ExecStartPre=/bin/bash -c 'test -s /opt/services/registry/certs/domain.key && test -s /opt/services/registry/certs/domain.key || /bin/openssl req -newkey rsa:4096 -nodes -sha256 -keyout /opt/services/registry/certs/domain.key -x509 -days 365 -out /opt/services/registry/certs/domain.crt -subj "/C=SE/ST=Stockholm/L=Stockholm/O=Red Hat/OU=Consulting/CN=support.ocp.kahvi.online/emailAddress=admin@ocp.kahvi.online.com"'
+        ExecStart=/bin/podman run --name image-mirror-service -p 5000:5000 --net host -v /opt/services/registry/data:/var/lib/registry:z -v /opt/services/registry/auth:/auth:z -e "REGISTRY_AUTH=htpasswd" -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd -v /opt/services/registry/certs:/certs:z -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key docker.io/library/registry:2
         [Install]
         WantedBy=multi-user.target
 ...
