@@ -13,7 +13,7 @@
 # Deploy utility node
 Create the Libvirt network:
 ```bash
-virsh net-define --file ocp4.xml
+virsh net-define --file ocp4.xml && virsh net-start ocp4
 ```
 
 Create an Open vSwitch bridge:
@@ -26,7 +26,7 @@ Download Fedora CoreOS:
 curl https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/31.20200118.3.0/x86_64/fedora-coreos-31.20200118.3.0-qemu.x86_64.qcow2.xz -o /var/lib/libvirt/images/fedora-coreos-31.20200113.3.1-qemu.x86_64.qcow2
 ```
 
-Add your SSH key and make any necessary modifications to `utility.fcc`.
+Add your SSH key and make any necessary modifications to `utility.fcc`.  
 Generate ignition config:
 ```bash
 fcct -strict -pretty < utility.fcc > /var/lib/libvirt/images/utility.ign
