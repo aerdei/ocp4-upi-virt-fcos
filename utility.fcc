@@ -366,12 +366,20 @@ storage:
       contents:
         inline: |
           ocp:$2y$05$ZjDsu1eW1zEiwrtky0L6Qe2nLKk8cUogiWZibWsN6GxrugLxpaNM2
+    - path: /opt/services/registry/auth/pullsecret_rh.json
+      overwrite: true
+      user:
+        name: core
+      contents:
+        inline: |
+          "YourPullSecretHere-https://cloud.redhat.com/openshift/"
+      mode: 0744
 passwd:
   users:
     - name: core
       password_hash: "$1$gVS./087$3aAcWMmCfaprNE6rb74j3 0"
       ssh_authorized_keys:
-        - "YourPublicSSHKeyHere"
+        - "YourSSHKeyHere
 systemd:
   units:
     - name: httpd-container.service
@@ -471,8 +479,27 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill image-mirror-service
         ExecStartPre=-/bin/podman rm image-mirror-service
-        ExecStartPre=/bin/bash -c 'test -s /opt/services/registry/certs/domain.key && test -s /opt/services/registry/certs/domain.key || /bin/openssl req -newkey rsa:4096 -nodes -sha256 -keyout /opt/services/registry/certs/domain.key -x509 -days 365 -out /opt/services/registry/certs/domain.crt -subj "/C=SE/ST=Stockholm/L=Stockholm/O=Red Hat/OU=Consulting/CN=support.ocp.kahvi.online/emailAddress=admin@ocp.kahvi.online.com"'
+        ExecStartPre=/bin/bash -c 'test -s /opt/services/registry/certs/domain.key && test -s /opt/services/registry/certs/domain.key || /bin/openssl req -newkey rsa:4096 -nodes -sha256 -keyout /opt/services/registry/certs/domain.key -x509 -days 365 -out /opt/services/registry/certs/domain.crt -subj "/C=SE/ST=Stockholm/L=Stockholm/O=Red Hat/OU=Consulting/CN=utility.ocp.kahvi.online/emailAddress=admin@ocp.kahvi.online.com"'
+        ExecStartPre=/bin/bash -c '/bin/cp /opt/services/registry/certs/domain.crt /opt/services/httpd/www/html/'
         ExecStart=/bin/podman run --name image-mirror-service -p 5000:5000 --net host -v /opt/services/registry/data:/var/lib/registry:z -v /opt/services/registry/auth:/auth:z -e "REGISTRY_AUTH=htpasswd" -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd -v /opt/services/registry/certs:/certs:z -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key docker.io/library/registry:2
+        ExecStartPost=/bin/sleep 15
+        [Install]
+        WantedBy=multi-user.target
+    - name: install-prep.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Install-prep-container
+        After=image-mirror.service
+        Wants=network-online.target
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill install-prep-service
+        ExecStartPre=-/bin/podman rm install-prep-service
+        ExecStartPre=/bin/bash -c '/bin/cp /opt/services/registry/certs/domain.crt /etc/pki/ca-trust/source/anchors/ && /bin/update-ca-trust'
+        ExecStartPre=/bin/curl -v -s -u ocp:ocp https://utility.ocp.kahvi.online:5000/v2/_catalog
+        ExecStartPre=/bin/bash -c "/bin/jq '.auths += {\"utility.ocp.kahvi.online:5000\":{\"auth\":\"b2NwOm9jcA==\",\"email\":\"admin@ocp.kahvi.online\"}}' /opt/services/registry/auth/pullsecret_rh.json | /bin/tee /opt/services/registry/auth/pullsecret.json"
+        ExecStart=/bin/podman run --name install-prep-service --net host -v /etc/pki/ca-trust/extracted/:/etc/pki/ca-trust/extracted/:z -v /opt/services/registry/auth:/opt/auth:z -v /opt/services/httpd/www/html:/opt/html:z quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/bash -c '/opt/html/oc adm -a /opt/auth/pullsecret.json release mirror --from=quay.io/openshift-release-dev/ocp-release:4.3.0-x86_64 --to=utility.ocp.kahvi.online:5000/ocp4/openshift4 --to-release-image=utility.ocp.kahvi.online:5000/ocp4/openshift4:4.3.0-x86_64 --loglevel 7 && /opt/html/oc adm -a /opt/auth/pullsecret.json release extract --to=/opt/html/ --command=openshift-install "utility.ocp.kahvi.online:5000/ocp4/openshift4:4.3.0-x86_64"'
         [Install]
         WantedBy=multi-user.target
 ...
