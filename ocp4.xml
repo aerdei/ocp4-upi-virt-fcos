@@ -7,11 +7,11 @@
   </forward>
   <bridge name='virbr0' stp='on' delay='0'/>
   <dns>
-    <forwarder domain='kahvi.online' addr='192.168.122.53'/>
+    <forwarder domain='example.com' addr='192.168.122.53'/>
   </dns>
   <ip address='192.168.122.1' netmask='255.255.255.0'>
     <dhcp>
-      <host mac='12:34:56:00:00:53' name='utility.ocp.kahvi.online' ip='192.168.122.53'/>
+      <host mac='12:34:56:00:00:53' name='utility.ocp.example.com' ip='192.168.122.53'/>
     </dhcp>
   </ip>
 </network>
