@@ -8,7 +8,7 @@
 > libvirt  
 > virt-install  
 > openvswitch  
-> [fcct](https://github.com/coreos/fcct/releases)
+> [fcct](https://github.com/coreos/fcct/releases)  
 > xz
 
 # Deploy utility node
