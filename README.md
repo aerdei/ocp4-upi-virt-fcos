@@ -26,7 +26,7 @@ Download Fedora CoreOS:
 curl https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/31.20200118.3.0/x86_64/fedora-coreos-31.20200118.3.0-qemu.x86_64.qcow2.xz -o /var/lib/libvirt/images/fedora-coreos-31.20200113.3.1-qemu.x86_64.qcow2
 ```
 
-Add your `SSH key` and `pull secret` to `utility.fcc`.  
+Add your pull secret to `.storage.files.$11` and your host's SSH key to `passwd.users.$0.ssh_authorized_keys` in `utility.fcc`.  
 Generate ignition config:
 ```bash
 fcct -strict -pretty < utility.fcc > /var/lib/libvirt/images/utility.ign
@@ -73,14 +73,16 @@ When the bootstrap node is up, deploy the masters:
 ```bash
 bash deploy.sh masters
 ```
-
-When the masters are up and the bootstrap process is complete, you are ready to deploy the worker nodes:
+When the masters are up and the bootstrap process is complete, you are ready to destroy the bootstrap node and deploy the worker nodes:
 ```bash
+virsh destroy bootstrap.ocp.example.com
+virsh undefine bootstrap.ocp.example.com --remove-all-storage
 bash deploy.sh workers
 ```
-
-Make sure to approve any CSRs that are generated while provisioning workers:
+Make sure to approve any CSRs that are generated while provisioning the workers:
 ```bash
+export KUBECONFIG=$(pwd)/cluster/auth/kubeconfig
+oc login -u system:admin
 oc get csr -o go-template --template='{{range .items}}{{if  not .status}}{{printf "%s\n" .metadata.name}}{{end}}{{end}}' | xargs -i oc adm certificate approve {}
 ```
 # Cleanup
@@ -88,3 +90,5 @@ To destroy and undefine every virtual machine related to this cluster, run `clea
 
 # Known issues
 - At startup, Fedora CoreOS will request IPs through DHCP on both of its interfaces. This should work on `eth0`, but a timeout must happen on `eth1` for the boot process to continue.
+- RHCOS machines configured with virt-install currently don't reboot automatically. You need to invoke `start.sh` once they are in a shut down state.
+- Currently there is no feedback on the image mirroring process from the utility node. It is recommeneded to check the logs for `image-mirror.service`.
