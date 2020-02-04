@@ -39,7 +39,7 @@ storage:
       user:
         name: core
       contents:
-        inline: "utility.ocp.kahvi.online"
+        inline: "utility.ocp.example.com"
       mode: 0644
     - path: /opt/services/httpd/conf/httpd.conf
       overwrite: true
@@ -47,7 +47,7 @@ storage:
         name: core
       contents:
         inline: |
-          ServerName "utility.ocp.kahvi.online"
+          ServerName "utility.ocp.example.com"
           ServerRoot "/etc/httpd"
           Listen 8080
           Include conf.modules.d/*.conf
@@ -179,7 +179,7 @@ storage:
         name: core
       contents:
         inline: |
-          option domain-name "kahvi.online";
+          option domain-name "example.com";
           option domain-name-servers 192.168.155.53;
           option ntp-servers 192.168.155.53;
           option routers 192.168.155.1;
@@ -195,32 +195,32 @@ storage:
           host bootstrap {
             hardware ethernet 12:34:56:00:00:00;
             fixed-address 192.168.155.100;
-            option host-name "bootstrap.ocp.kahvi.online";
+            option host-name "bootstrap.ocp.example.com";
           }
           host master-0 {
             hardware ethernet 12:34:56:00:00:10;
             fixed-address 192.168.155.110;
-            option host-name "master-0.ocp.kahvi.online";
+            option host-name "master-0.ocp.example.com";
           }
           host master-1 {
             hardware ethernet 12:34:56:00:00:11;
             fixed-address 192.168.155.111;
-            option host-name "master-1.ocp.kahvi.online";
+            option host-name "master-1.ocp.example.com";
           }
           host master-2 {
             hardware ethernet 12:34:56:00:00:12;
             fixed-address 192.168.155.112;
-            option host-name "master-2.ocp.kahvi.online";
+            option host-name "master-2.ocp.example.com";
           }
           host worker-0 {
             hardware ethernet 12:34:56:00:00:20;
             fixed-address 192.168.155.120;
-            option host-name "worker-0.ocp.kahvi.online";
+            option host-name "worker-0.ocp.example.com";
           }
           host worker-1 {
             hardware ethernet 12:34:56:00:00:21;
             fixed-address 192.168.155.121;
-            option host-name "worker-1.ocp.kahvi.online";
+            option host-name "worker-1.ocp.example.com";
           }
     - path: /opt/services/named/named.conf
       mode: 0644
@@ -249,9 +249,9 @@ storage:
                   type hint;
                   file "named.ca";
           };
-          zone "kahvi.online" IN {
+          zone "example.com" IN {
                   type master;
-                  file "/opt/kahvi.online.zone";
+                  file "/opt/example.com.zone";
           };
           zone "155.168.192.in-addr.arpa" IN {
                   type master;
@@ -259,24 +259,24 @@ storage:
           };
           include "/etc/named.rfc1912.zones";
           include "/etc/named.root.key";
-    - path: /opt/services/named/kahvi.online.zone
+    - path: /opt/services/named/example.com.zone
       mode: 0644
       overwrite: true
       user:
         name: core
       contents:
         inline: |
-          ; Authoritative data for kahvi.online zone
+          ; Authoritative data for example.com zone
           ;
-          $ORIGIN kahvi.online.
+          $ORIGIN example.com.
           $TTL 1D
-          @		IN	SOA	dns.kahvi.online.	root.kahvi.online. (
+          @		IN	SOA	dns.example.com.	root.example.com. (
                       2019110501      ; serial
                       3600            ; refresh
                       1800            ; retry
                       1W              ; expire
                       3H )            ; minimum
-              IN	NS	dns.kahvi.online.
+              IN	NS	dns.example.com.
           dns		IN	A	192.168.155.53
           ocp 		IN	A	192.168.155.53
           utility.ocp	IN	A	192.168.155.53
@@ -293,9 +293,9 @@ storage:
           worker-0.ocp	IN	A	192.168.155.120
           worker-1.ocp	IN	A	192.168.155.121
           ; _service.prot.owner-name                          class   rr      pri  weight  port  target
-          _etcd-server-ssl._tcp.ocp.kahvi.online.	86400       IN      SRV     0    10      2380  etcd-0.ocp.kahvi.online.
-          _etcd-server-ssl._tcp.ocp.kahvi.online.	86400	    IN      SRV     0    10      2380  etcd-1.ocp.kahvi.online.
-          _etcd-server-ssl._tcp.ocp.kahvi.online.	86400	    IN      SRV     0    10      2380  etcd-2.ocp.kahvi.online.
+          _etcd-server-ssl._tcp.ocp.example.com.	86400       IN      SRV     0    10      2380  etcd-0.ocp.example.com.
+          _etcd-server-ssl._tcp.ocp.example.com.	86400	    IN      SRV     0    10      2380  etcd-1.ocp.example.com.
+          _etcd-server-ssl._tcp.ocp.example.com.	86400	    IN      SRV     0    10      2380  etcd-2.ocp.example.com.
     - path: /opt/services/named/155.168.192.in-addr.arpa
       mode: 0644
       overwrite: true
@@ -304,20 +304,20 @@ storage:
       contents:
         inline: |
           $TTL 1D
-          @	IN	SOA	dns.kahvi.online.	root.kahvi.online. (
+          @	IN	SOA	dns.example.com.	root.example.com. (
                       2019110501      ; serial
                       3600            ; refresh
                       1800            ; retry
                       1W              ; expire
                       3H )            ; minimum
           @	IN	NS	dns.
-          53	IN	PTR	dns.kahvi.online.
-          100	IN	PTR	bootstrap.ocp.kahvi.online.
-          110	IN	PTR	master-0.ocp.kahvi.online.
-          111	IN	PTR	master-1.ocp.kahvi.online.
-          112	IN	PTR	master-2.ocp.kahvi.online.
-          120	IN	PTR	worker-0.ocp.kahvi.online.
-          121	IN	PTR	worker-1.ocp.kahvi.online.
+          53	IN	PTR	dns.example.com.
+          100	IN	PTR	bootstrap.ocp.example.com.
+          110	IN	PTR	master-0.ocp.example.com.
+          111	IN	PTR	master-1.ocp.example.com.
+          112	IN	PTR	master-2.ocp.example.com.
+          120	IN	PTR	worker-0.ocp.example.com.
+          121	IN	PTR	worker-1.ocp.example.com.
     - path: "/etc/NetworkManager/system-connections/Wired connection 2.nmconnection"
       mode: 0600
       overwrite: true
@@ -372,14 +372,14 @@ storage:
         name: core
       contents:
         inline: |
-          "YourPullSecretHere-https://cloud.redhat.com/openshift/"
+          ***REMOVED***
       mode: 0744
 passwd:
   users:
     - name: core
       password_hash: "$1$gVS./087$3aAcWMmCfaprNE6rb74j3 0"
       ssh_authorized_keys:
-        - "YourSSHKeyHere
+        - ssh-rsa ***REMOVED***
 systemd:
   units:
     - name: httpd-container.service
@@ -479,7 +479,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill image-mirror-service
         ExecStartPre=-/bin/podman rm image-mirror-service
-        ExecStartPre=/bin/bash -c 'test -s /opt/services/registry/certs/domain.key && test -s /opt/services/registry/certs/domain.key || /bin/openssl req -newkey rsa:4096 -nodes -sha256 -keyout /opt/services/registry/certs/domain.key -x509 -days 365 -out /opt/services/registry/certs/domain.crt -subj "/C=SE/ST=Stockholm/L=Stockholm/O=Red Hat/OU=Consulting/CN=utility.ocp.kahvi.online/emailAddress=admin@ocp.kahvi.online.com"'
+        ExecStartPre=/bin/bash -c 'test -s /opt/services/registry/certs/domain.key && test -s /opt/services/registry/certs/domain.key || /bin/openssl req -newkey rsa:4096 -nodes -sha256 -keyout /opt/services/registry/certs/domain.key -x509 -days 365 -out /opt/services/registry/certs/domain.crt -subj "/C=SE/ST=Stockholm/L=Stockholm/O=Red Hat/OU=Consulting/CN=utility.ocp.example.com/emailAddress=admin@ocp.example.com.com"'
         ExecStartPre=/bin/bash -c '/bin/cp /opt/services/registry/certs/domain.crt /opt/services/httpd/www/html/'
         ExecStart=/bin/podman run --name image-mirror-service -p 5000:5000 --net host -v /opt/services/registry/data:/var/lib/registry:z -v /opt/services/registry/auth:/auth:z -e "REGISTRY_AUTH=htpasswd" -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd -v /opt/services/registry/certs:/certs:z -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key docker.io/library/registry:2
         ExecStartPost=/bin/sleep 15
@@ -497,9 +497,9 @@ systemd:
         ExecStartPre=-/bin/podman kill install-prep-service
         ExecStartPre=-/bin/podman rm install-prep-service
         ExecStartPre=/bin/bash -c '/bin/cp /opt/services/registry/certs/domain.crt /etc/pki/ca-trust/source/anchors/ && /bin/update-ca-trust'
-        ExecStartPre=/bin/curl -v -s -u ocp:ocp https://utility.ocp.kahvi.online:5000/v2/_catalog
-        ExecStartPre=/bin/bash -c "/bin/jq '.auths += {\"utility.ocp.kahvi.online:5000\":{\"auth\":\"b2NwOm9jcA==\",\"email\":\"admin@ocp.kahvi.online\"}}' /opt/services/registry/auth/pullsecret_rh.json | /bin/tee /opt/services/registry/auth/pullsecret.json"
-        ExecStart=/bin/podman run --name install-prep-service --net host -v /etc/pki/ca-trust/extracted/:/etc/pki/ca-trust/extracted/:z -v /opt/services/registry/auth:/opt/auth:z -v /opt/services/httpd/www/html:/opt/html:z quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/bash -c '/opt/html/oc adm -a /opt/auth/pullsecret.json release mirror --from=quay.io/openshift-release-dev/ocp-release:4.3.0-x86_64 --to=utility.ocp.kahvi.online:5000/ocp4/openshift4 --to-release-image=utility.ocp.kahvi.online:5000/ocp4/openshift4:4.3.0-x86_64 --loglevel 7 && /opt/html/oc adm -a /opt/auth/pullsecret.json release extract --to=/opt/html/ --command=openshift-install "utility.ocp.kahvi.online:5000/ocp4/openshift4:4.3.0-x86_64"'
+        ExecStartPre=/bin/curl -v -s -u ocp:ocp https://utility.ocp.example.com:5000/v2/_catalog
+        ExecStartPre=/bin/bash -c "/bin/jq '.auths += {\"utility.ocp.example.com:5000\":{\"auth\":\"b2NwOm9jcA==\",\"email\":\"admin@ocp.example.com\"}}' /opt/services/registry/auth/pullsecret_rh.json | /bin/tee /opt/services/registry/auth/pullsecret.json"
+        ExecStart=/bin/podman run --name install-prep-service --net host -v /etc/pki/ca-trust/extracted/:/etc/pki/ca-trust/extracted/:z -v /opt/services/registry/auth:/opt/auth:z -v /opt/services/httpd/www/html:/opt/html:z quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/bash -c '/opt/html/oc adm -a /opt/auth/pullsecret.json release mirror --from=quay.io/openshift-release-dev/ocp-release:4.3.0-x86_64 --to=utility.ocp.example.com:5000/ocp4/openshift4 --to-release-image=utility.ocp.example.com:5000/ocp4/openshift4:4.3.0-x86_64 --loglevel 7 && /opt/html/oc adm -a /opt/auth/pullsecret.json release extract --to=/opt/html/ --command=openshift-install "utility.ocp.example.com:5000/ocp4/openshift4:4.3.0-x86_64"'
         [Install]
         WantedBy=multi-user.target
 ...
