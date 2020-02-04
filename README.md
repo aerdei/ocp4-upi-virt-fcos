@@ -34,7 +34,7 @@ fcct -strict -pretty < utility.fcc > /var/lib/libvirt/images/utility.ign
 
 Start Fedora CoreOS with the ignition config:
 ```bash
-virt-install --connect qemu:///system --import --name utility.ocp.kahvi.online --network network=ocp4,mac=12:34:56:00:00:53 --network bridge=ovsbr,mac=12:34:56:00:00:54,virtualport_type=openvswitch --ram 1024 --vcpus 1 --os-variant fedora29 --disk size=15,backing_store=/var/lib/libvirt/images/fedora-coreos-31.20200113.3.1-qemu.x86_64.qcow2,format=qcow2,bus=virtio --qemu-commandline="-fw_cfg name=opt/com.coreos/config,file=/var/lib/libvirt/images/utility.ign" --vnc --noautoconsole
+virt-install --connect qemu:///system --import --name utility.ocp.example.com --network network=ocp4,mac=12:34:56:00:00:53 --network bridge=ovsbr,mac=12:34:56:00:00:54,virtualport_type=openvswitch --ram 1024 --vcpus 1 --os-variant fedora29 --disk size=15,backing_store=/var/lib/libvirt/images/fedora-coreos-31.20200113.3.1-qemu.x86_64.qcow2,format=qcow2,bus=virtio --qemu-commandline="-fw_cfg name=opt/com.coreos/config,file=/var/lib/libvirt/images/utility.ign" --vnc --noautoconsole
 ```
 When the utility node is up, you can start preparing the OpenShift installation.  
 
@@ -44,13 +44,17 @@ Download the extracted installer to the host:
 ```bash
 curl http://192.168.122.53:8080/openshift-install -o openshift-install
 ```
+Get the certificate that you will use for configuring the installer:
+```bash
+curl http://192.168.122.53:8080/domain.crt
+```
 Configure `install-config.yaml` in the `cluster` directory.  
 Create installer files and upload them to the utility VM:
 ```bash
 ./openshift-install create manifests --dir=cluster/
 sed -i 's/mastersSchedulable: true/mastersSchedulable: false/g' cluster/manifests/cluster-scheduler-02-config.yml
 ./openshift-install create ignition-configs --dir=cluster/
-scp -r install-files/* core@192.168.122.53:/opt/services/httpd/www/html/
+rsync -Pavr --chmod=o+r ./cluster/* core@192.168.122.53:/opt/services/httpd/www/html/
 ```
 Prepare RHCOS images for the install in the `iso_rhcos` directory.
 ```bash
