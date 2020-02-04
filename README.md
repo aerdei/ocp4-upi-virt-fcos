@@ -9,6 +9,7 @@
 > virt-install  
 > openvswitch  
 > [fcct](https://github.com/coreos/fcct/releases)
+> xz
 
 # Deploy utility node
 Create the Libvirt network:
@@ -23,7 +24,7 @@ ovs-vsctl add-br ovsbr
 
 Download Fedora CoreOS:
 ```bash
-curl https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/31.20200118.3.0/x86_64/fedora-coreos-31.20200118.3.0-qemu.x86_64.qcow2.xz -o /var/lib/libvirt/images/fedora-coreos-31.20200113.3.1-qemu.x86_64.qcow2
+curl https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/31.20200118.3.0/x86_64/fedora-coreos-31.20200118.3.0-qemu.x86_64.qcow2.xz -o /var/lib/libvirt/images/fedora-coreos-31.20200113.3.1-qemu.x86_64.qcow2.xz && xz --decompress /var/lib/libvirt/images/fedora-coreos-31.20200113.3.1-qemu.x86_64.qcow2.xz
 ```
 
 Add your pull secret to `.storage.files.$11` and your host's SSH key to `passwd.users.$0.ssh_authorized_keys` in `utility.fcc`.  
