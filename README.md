@@ -40,6 +40,10 @@ When the utility node is up, you can start preparing the OpenShift installation.
 
 # Deploy OpenShift 4.3
 ## Prepare the installer
+Prepare RHCOS images for the install in the `iso_rhcos` directory.
+```bash
+wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-installer.iso https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-installer-kernel https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-installer-initramfs.img -N -P ./iso_rhcos/
+```
 Download the extracted installer to the host:  
 ```bash
 curl http://192.168.122.53:8080/openshift-install -o openshift-install
@@ -55,10 +59,6 @@ Create installer files and upload them to the utility VM:
 sed -i 's/mastersSchedulable: true/mastersSchedulable: false/g' cluster/manifests/cluster-scheduler-02-config.yml
 ./openshift-install create ignition-configs --dir=cluster/
 rsync -Pavr --chmod=o+r ./cluster/* core@192.168.122.53:/opt/services/httpd/www/html/
-```
-Prepare RHCOS images for the install in the `iso_rhcos` directory.
-```bash
-wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-installer.iso https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-installer-kernel https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-installer-initramfs.img -P ./iso_rhcos/
 ```
 ## Deploy nodes
 Deploy bootstrap node:
