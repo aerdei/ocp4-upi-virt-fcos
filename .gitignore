@@ -5,5 +5,9 @@
 kubectl
 oc
 openshift-install
-installer/install-files/*
 *.retry
+cluster/
+!cluster/install-config.yaml
+iso_rhcos/
+!iso_rhcos/.treeinfo
+install-config.yaml
