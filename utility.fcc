@@ -491,6 +491,7 @@ systemd:
         [Unit]
         Description=Install-prep-container
         After=image-mirror.service
+        After=client-downloader-container.service
         Wants=network-online.target
         [Service]
         TimeoutStartSec=0
