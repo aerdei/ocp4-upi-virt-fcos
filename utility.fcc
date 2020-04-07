@@ -451,7 +451,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill client-downloader-service
         ExecStartPre=-/bin/podman rm client-downloader-service
-        ExecStart=/bin/podman run --name client-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux-4.3.0.tar.gz | /usr/bin/tar -xvz -C /opt/'
+        ExecStart=/bin/podman run --name client-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.10/openshift-client-linux-4.3.10.tar.gz | /usr/bin/tar -xvz -C /opt/'
         [Install]
         WantedBy=multi-user.target
     - name: tarball-downloader-container.service
@@ -465,7 +465,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill tarball-downloader-service
         ExecStartPre=-/bin/podman rm tarball-downloader-service
-        ExecStart=/bin/podman run --name tarball-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/latest/latest/rhcos-4.3.0-x86_64-metal.raw.gz -o /opt/rhcos-4.3.0-x86_64-metal.raw.gz
+        ExecStart=/bin/podman run --name tarball-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.8/rhcos-4.3.8-x86_64-metal.x86_64.raw.gz -o /opt/rhcos-4.3.8-x86_64-metal.x86_64.raw.gz
         [Install]
         WantedBy=multi-user.target
     - name: image-mirror.service
@@ -491,6 +491,7 @@ systemd:
         [Unit]
         Description=Install-prep-container
         After=image-mirror.service
+        After=client-downloader-container.service
         Wants=network-online.target
         [Service]
         TimeoutStartSec=0
@@ -499,7 +500,7 @@ systemd:
         ExecStartPre=/bin/bash -c '/bin/cp /opt/services/registry/certs/domain.crt /etc/pki/ca-trust/source/anchors/ && /bin/update-ca-trust'
         ExecStartPre=/bin/curl -v -s -u ocp:ocp https://utility.ocp.example.com:5000/v2/_catalog
         ExecStartPre=/bin/bash -c "/bin/jq '.auths += {\"utility.ocp.example.com:5000\":{\"auth\":\"b2NwOm9jcA==\",\"email\":\"admin@ocp.example.com\"}}' /opt/services/registry/auth/pullsecret_rh.json | /bin/tee /opt/services/registry/auth/pullsecret.json"
-        ExecStart=/bin/podman run --name install-prep-service --net host -v /etc/pki/ca-trust/extracted/:/etc/pki/ca-trust/extracted/:z -v /opt/services/registry/auth:/opt/auth:z -v /opt/services/httpd/www/html:/opt/html:z quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/bash -c '/opt/html/oc adm -a /opt/auth/pullsecret.json release mirror --from=quay.io/openshift-release-dev/ocp-release:4.3.0-x86_64 --to=utility.ocp.example.com:5000/ocp4/openshift4 --to-release-image=utility.ocp.example.com:5000/ocp4/openshift4:4.3.0-x86_64 --loglevel 7 && /opt/html/oc adm -a /opt/auth/pullsecret.json release extract --to=/opt/html/ --command=openshift-install "utility.ocp.example.com:5000/ocp4/openshift4:4.3.0-x86_64"'
+        ExecStart=/bin/podman run --name install-prep-service --net host -v /etc/pki/ca-trust/extracted/:/etc/pki/ca-trust/extracted/:z -v /opt/services/registry/auth:/opt/auth:z -v /opt/services/httpd/www/html:/opt/html:z quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/bash -c '/opt/html/oc adm -a /opt/auth/pullsecret.json release mirror --from=quay.io/openshift-release-dev/ocp-release:4.3.10-x86_64 --to=utility.ocp.example.com:5000/ocp4/openshift4 --to-release-image=utility.ocp.example.com:5000/ocp4/openshift4:4.3.10-x86_64 --loglevel 7 && /opt/html/oc adm -a /opt/auth/pullsecret.json release extract --to=/opt/html/ --command=openshift-install "utility.ocp.example.com:5000/ocp4/openshift4:4.3.10-x86_64"'
         [Install]
         WantedBy=multi-user.target
 ...

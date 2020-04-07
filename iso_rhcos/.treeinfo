@@ -2,7 +2,7 @@
 arch = x86_64
 family = RHCOS
 platforms = x86_64
-version =  4.3.0
+version =  4.3.8
 [images-x86_64]
-initrd = rhcos-4.3.0-x86_64-installer-initramfs.img
-kernel = rhcos-4.3.0-x86_64-installer-kernel
+initrd = rhcos-4.3.8-x86_64-installer-initramfs.x86_64.img
+kernel = rhcos-4.3.8-x86_64-installer-kernel-x86_64
