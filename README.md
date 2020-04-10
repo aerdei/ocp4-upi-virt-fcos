@@ -35,7 +35,7 @@ fcct -strict -pretty < utility.fcc > /var/lib/libvirt/images/utility.ign
 
 Start Fedora CoreOS with the ignition config:
 ```bash
-virt-install --connect qemu:///system --import --name utility.ocp.example.com --network network=ocp4,mac=12:34:56:00:00:53 --network bridge=ovsbr,mac=12:34:56:00:00:54,virtualport_type=openvswitch --ram 1024 --vcpus 1 --os-variant fedora29 --disk size=15,backing_store=/var/lib/libvirt/images/fedora-coreos-31.20200113.3.1-qemu.x86_64.qcow2,format=qcow2,bus=virtio --qemu-commandline="-fw_cfg name=opt/com.coreos/config,file=/var/lib/libvirt/images/utility.ign" --vnc --noautoconsole
+virt-install --connect qemu:///system --import --name utility.ocp.example.com --network network=ocp4,mac=12:34:56:00:00:53 --network bridge=ovsbr,mac=12:34:56:00:00:54,virtualport_type=openvswitch --ram 1024 --vcpus 1 --os-variant fedora29 --disk size=50,backing_store=/var/lib/libvirt/images/fedora-coreos-31.20200113.3.1-qemu.x86_64.qcow2,format=qcow2,bus=virtio --qemu-commandline="-fw_cfg name=opt/com.coreos/config,file=/var/lib/libvirt/images/utility.ign" --vnc --noautoconsole
 ```
 When the utility node is up, you can start preparing the OpenShift installation.  
 
@@ -77,8 +77,8 @@ bash deploy.sh masters
 ```
 When the masters are up and the bootstrap process is complete, you are ready to destroy the bootstrap node and deploy the worker nodes:
 ```bash
-virsh destroy bootstrap.ocp.example.com
-virsh undefine bootstrap.ocp.example.com --remove-all-storage
+virsh destroy bootstrap.ocp.aerdei.space
+virsh undefine bootstrap.ocp.aerdei.space --remove-all-storage
 bash deploy.sh workers
 ```
 Make sure to approve any CSRs that are generated while provisioning the workers:
