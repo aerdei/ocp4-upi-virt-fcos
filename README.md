@@ -48,6 +48,7 @@ wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.8/
 Download the extracted installer to the host:  
 ```bash
 curl http://192.168.122.53:8080/openshift-install -o openshift-install
+chmod +x ./openshift-install
 ```
 Get the certificate that you will use for configuring the installer:
 ```bash
