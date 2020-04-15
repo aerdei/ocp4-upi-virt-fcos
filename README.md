@@ -77,8 +77,8 @@ bash deploy.sh masters
 ```
 When the masters are up and the bootstrap process is complete, you are ready to destroy the bootstrap node and deploy the worker nodes:
 ```bash
-virsh destroy bootstrap.ocp.aerdei.space
-virsh undefine bootstrap.ocp.aerdei.space --remove-all-storage
+virsh destroy bootstrap.ocp.example.com
+virsh undefine bootstrap.ocp.example.com --remove-all-storage
 bash deploy.sh workers
 ```
 Make sure to approve any CSRs that are generated while provisioning the workers:
