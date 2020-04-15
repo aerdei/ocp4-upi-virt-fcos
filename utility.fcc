@@ -535,7 +535,21 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill client-downloader-service
         ExecStartPre=-/bin/podman rm client-downloader-service
-        ExecStart=/bin/podman run --name client-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.10/openshift-client-linux-4.3.10.tar.gz | /usr/bin/tar -xvz -C /opt/'
+        ExecStart=/bin/podman run --name client-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.10/openshift-client-linux-4.3.10.tar.gz | /usr/bin/tar -xvz -C /opt/'
+        [Install]
+        WantedBy=multi-user.target
+    - name: installer-downloader-container.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Installer-downloader-container
+        After=named-container.service
+        Wants=network-online.target
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill installer-downloader-service
+        ExecStartPre=-/bin/podman rm installer-downloader-service
+        ExecStart=/bin/podman run --name installer-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.10/openshift-install-linux-4.3.10.tar.gz | /usr/bin/tar -xvz -C /opt/'
         [Install]
         WantedBy=multi-user.target
     - name: tarball-downloader-container.service
