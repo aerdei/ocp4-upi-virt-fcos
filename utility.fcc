@@ -477,9 +477,9 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill httpd-service
         ExecStartPre=-/bin/podman rm httpd-service
-        ExecStartPre=/bin/podman pull quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1
+        ExecStartPre=/bin/podman pull quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2
         ExecStartPre=/bin/chcon -R -t httpd_sys_content_t /opt/services/httpd
-        ExecStart=/bin/podman run --name httpd-service -v /opt/services/httpd/conf:/etc/httpd/conf:z -v /opt/services/httpd/www/html:/var/www/html/:z --net host -p 8080:8080 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/sbin/httpd -DFOREGROUND -DNO_DETACH
+        ExecStart=/bin/podman run --name httpd-service -v /opt/services/httpd/conf:/etc/httpd/conf:z -v /opt/services/httpd/www/html:/var/www/html/:z --net host -p 8080:8080 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/httpd -DFOREGROUND -DNO_DETACH
         [Install]
         WantedBy=multi-user.target
     - name: haproxy-container.service
@@ -493,7 +493,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill haproxy-service
         ExecStartPre=-/bin/podman rm haproxy-service
-        ExecStart=/bin/podman run --name haproxy-service  -v /opt/services/haproxy/:/opt/:z --net host -p 443:443 -p 80:80 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/sbin/haproxy -f /opt/haproxy.cfg -d
+        ExecStart=/bin/podman run --name haproxy-service  -v /opt/services/haproxy/:/opt/:z --net host -p 443:443 -p 80:80 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/haproxy -f /opt/haproxy.cfg -d
         [Install]
         WantedBy=multi-user.target
     - name: dhcpd-container.service
@@ -507,7 +507,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill dhcpd-service
         ExecStartPre=-/bin/podman rm dhcpd-service
-        ExecStart=/bin/podman run --name dhcpd-service -v /opt/services/dhcpd/:/opt/:z --net host -p 67:67 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/sbin/dhcpd -4 -f -d --no-pid -cf "/opt/dhcpd.conf" eth1
+        ExecStart=/bin/podman run --name dhcpd-service -v /opt/services/dhcpd/:/opt/:z --net host -p 67:67 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/dhcpd -4 -f -d --no-pid -cf "/opt/dhcpd.conf" eth1
         [Install]
         WantedBy=multi-user.target
     - name: named-container.service
@@ -521,7 +521,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill named-service
         ExecStartPre=-/bin/podman rm named-service
-        ExecStart=/bin/podman run --name named-service -v /opt/services/named/:/opt/:z --net host -p 53:53 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/sbin/named -c "/opt/named.conf" -f
+        ExecStart=/bin/podman run --name named-service -v /opt/services/named/:/opt/:z --net host -p 53:53 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/named -c "/opt/named.conf" -f
         [Install]
         WantedBy=multi-user.target
     - name: client-downloader-container.service
@@ -549,7 +549,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill tarball-downloader-service
         ExecStartPre=-/bin/podman rm tarball-downloader-service
-        ExecStart=/bin/podman run --name tarball-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.8/rhcos-4.3.8-x86_64-metal.x86_64.raw.gz -o /opt/rhcos-4.3.8-x86_64-metal.x86_64.raw.gz
+        ExecStart=/bin/podman run --name tarball-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.8/rhcos-4.3.8-x86_64-metal.x86_64.raw.gz -o /opt/rhcos-4.3.8-x86_64-metal.x86_64.raw.gz
         [Install]
         WantedBy=multi-user.target
     - name: proxy.service
@@ -563,7 +563,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill proxy-service
         ExecStartPre=-/bin/podman rm proxy-service
-        ExecStart=/bin/podman run --name proxy-service -p 3128:3128 --net host -v /opt/services/proxy/squid.conf:/etc/squid/squid.conf:Z quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/sbin/squid --foreground
+        ExecStart=/bin/podman run --name proxy-service -p 3128:3128 --net host -v /opt/services/proxy/squid.conf:/etc/squid/squid.conf:Z quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/squid --foreground
         ExecStartPost=/bin/sleep 15
         [Install]
         WantedBy=multi-user.target
