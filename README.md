@@ -50,10 +50,6 @@ Download the extracted installer to the host:
 curl http://192.168.122.53:8080/openshift-install -o openshift-install
 chmod +x ./openshift-install
 ```
-Get the certificate that you will use for configuring the installer:
-```bash
-curl http://192.168.122.53:8080/domain.crt
-```
 Configure `install-config.yaml` in the `cluster` directory.  
 Create installer files and upload them to the utility VM:
 ```bash
@@ -77,8 +73,8 @@ bash deploy.sh masters
 ```
 When the masters are up and the bootstrap process is complete, you are ready to destroy the bootstrap node and deploy the worker nodes:
 ```bash
-virsh destroy bootstrap.ocp.aerdei.space
-virsh undefine bootstrap.ocp.aerdei.space --remove-all-storage
+virsh destroy bootstrap.ocp.example.com
+virsh undefine bootstrap.ocp.example.com --remove-all-storage
 bash deploy.sh workers
 ```
 Make sure to approve any CSRs that are generated while provisioning the workers:
@@ -93,4 +89,3 @@ To destroy and undefine every virtual machine related to this cluster, run `clea
 # Known issues
 - At startup, Fedora CoreOS will request IPs through DHCP on both of its interfaces. This should work on `eth0`, but a timeout must happen on `eth1` for the boot process to continue.
 - RHCOS machines configured with virt-install currently don't reboot automatically. You need to invoke `start.sh` once they are in a shut down state.
-- Currently there is no feedback on the image mirroring process from the utility node. It is recommeneded to check the logs for `image-mirror.service`.
