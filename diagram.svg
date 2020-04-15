@@ -238,7 +238,7 @@
     <rect class="BoundingBox" stroke="none" fill="none" x="3876" y="7175" width="1018" height="257"/>
     <path fill="rgb(255,255,255)" stroke="none" d="M 4385,7430 L 3877,7430 3877,7176 4892,7176 4892,7430 4385,7430 Z"/>
     <path fill="none" stroke="rgb(0,0,0)" d="M 4385,7430 L 3877,7430 3877,7176 4892,7176 4892,7430 4385,7430 Z"/>
-    <text class="TextShape"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="212px" font-weight="400"><tspan class="TextPosition" x="4105" y="7375"><tspan fill="rgb(0,0,0)" stroke="none">mirror</tspan></tspan></tspan></text>
+    <text class="TextShape"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="212px" font-weight="400"><tspan class="TextPosition" x="4105" y="7375"><tspan fill="rgb(0,0,0)" stroke="none">proxy</tspan></tspan></tspan></text>
    </g>
   </g>
  </g>
