@@ -117,9 +117,9 @@ storage:
               maxconn 256
           defaults
                   log global
-                  timeout connect 10s
-                  timeout client 30s
-                  timeout server 30s
+                  timeout connect 30s
+                  timeout client 600s
+                  timeout server 600s
                   mode tcp
           backend bootstrap_masters_22623
                   mode tcp
