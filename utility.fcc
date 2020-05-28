@@ -393,9 +393,9 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill httpd-service
         ExecStartPre=-/bin/podman rm httpd-service
-        ExecStartPre=/bin/podman pull quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1
+        ExecStartPre=/bin/podman pull quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2
         ExecStartPre=/bin/chcon -R -t httpd_sys_content_t /opt/services/httpd
-        ExecStart=/bin/podman run --name httpd-service -v /opt/services/httpd/conf:/etc/httpd/conf:z -v /opt/services/httpd/www/html:/var/www/html/:z --net host -p 8080:8080 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/sbin/httpd -DFOREGROUND -DNO_DETACH
+        ExecStart=/bin/podman run --name httpd-service -v /opt/services/httpd/conf:/etc/httpd/conf:z -v /opt/services/httpd/www/html:/var/www/html/:z --net host -p 8080:8080 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/httpd -DFOREGROUND -DNO_DETACH
         [Install]
         WantedBy=multi-user.target
     - name: haproxy-container.service
@@ -409,7 +409,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill haproxy-service
         ExecStartPre=-/bin/podman rm haproxy-service
-        ExecStart=/bin/podman run --name haproxy-service  -v /opt/services/haproxy/:/opt/:z --net host -p 443:443 -p 80:80 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/sbin/haproxy -f /opt/haproxy.cfg -d
+        ExecStart=/bin/podman run --name haproxy-service  -v /opt/services/haproxy/:/opt/:z --net host -p 443:443 -p 80:80 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/haproxy -f /opt/haproxy.cfg -d
         [Install]
         WantedBy=multi-user.target
     - name: dhcpd-container.service
@@ -423,7 +423,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill dhcpd-service
         ExecStartPre=-/bin/podman rm dhcpd-service
-        ExecStart=/bin/podman run --name dhcpd-service -v /opt/services/dhcpd/:/opt/:z --net host -p 67:67 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/sbin/dhcpd -4 -f -d --no-pid -cf "/opt/dhcpd.conf" eth1
+        ExecStart=/bin/podman run --name dhcpd-service -v /opt/services/dhcpd/:/opt/:z --net host -p 67:67 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/dhcpd -4 -f -d --no-pid -cf "/opt/dhcpd.conf" eth1
         [Install]
         WantedBy=multi-user.target
     - name: named-container.service
@@ -437,7 +437,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill named-service
         ExecStartPre=-/bin/podman rm named-service
-        ExecStart=/bin/podman run --name named-service -v /opt/services/named/:/opt/:z --net host -p 53:53 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/sbin/named -c "/opt/named.conf" -f
+        ExecStart=/bin/podman run --name named-service -v /opt/services/named/:/opt/:z --net host -p 53:53 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/named -c "/opt/named.conf" -f
         [Install]
         WantedBy=multi-user.target
     - name: client-downloader-container.service
@@ -451,7 +451,21 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill client-downloader-service
         ExecStartPre=-/bin/podman rm client-downloader-service
-        ExecStart=/bin/podman run --name client-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.21/openshift-client-linux-4.3.21.tar.gz | /usr/bin/tar -xvz -C /opt/'
+        ExecStart=/bin/podman run --name client-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.21/openshift-client-linux-4.3.21.tar.gz | /usr/bin/tar -xvz -C /opt/'
+        [Install]
+        WantedBy=multi-user.target
+    - name: installer-downloader-container.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Installer-downloader-container
+        After=named-container.service
+        Wants=network-online.target
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill installer-downloader-service
+        ExecStartPre=-/bin/podman rm installer-downloader-service
+        ExecStart=/bin/podman run --name installer-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.21/openshift-install-linux-4.3.21.tar.gz | /usr/bin/tar -xvz -C /opt/'
         [Install]
         WantedBy=multi-user.target
     - name: tarball-downloader-container.service
@@ -465,7 +479,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill tarball-downloader-service
         ExecStartPre=-/bin/podman rm tarball-downloader-service
-        ExecStart=/bin/podman run --name tarball-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.8/rhcos-4.3.8-x86_64-metal.x86_64.raw.gz -o /opt/rhcos-4.3.8-x86_64-metal.x86_64.raw.gz
+        ExecStart=/bin/podman run --name tarball-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.8/rhcos-4.3.8-x86_64-metal.x86_64.raw.gz -o /opt/rhcos-4.3.8-x86_64-metal.x86_64.raw.gz
         [Install]
         WantedBy=multi-user.target
     - name: image-mirror.service
@@ -500,7 +514,7 @@ systemd:
         ExecStartPre=/bin/bash -c '/bin/cp /opt/services/registry/certs/domain.crt /etc/pki/ca-trust/source/anchors/ && /bin/update-ca-trust'
         ExecStartPre=/bin/curl -v -s -u ocp:ocp https://utility.ocp.example.com:5000/v2/_catalog
         ExecStartPre=/bin/bash -c "/bin/jq '.auths += {\"utility.ocp.example.com:5000\":{\"auth\":\"b2NwOm9jcA==\",\"email\":\"admin@ocp.example.com\"}}' /opt/services/registry/auth/pullsecret_rh.json | /bin/tee /opt/services/registry/auth/pullsecret.json"
-        ExecStart=/bin/podman run --name install-prep-service --net host -v /etc/pki/ca-trust/extracted/:/etc/pki/ca-trust/extracted/:z -v /opt/services/registry/auth:/opt/auth:z -v /opt/services/httpd/www/html:/opt/html:z quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.1 /usr/bin/bash -c '/opt/html/oc adm -a /opt/auth/pullsecret.json release mirror --from=quay.io/openshift-release-dev/ocp-release:4.3.21-x86_64 --to=utility.ocp.example.com:5000/ocp4/openshift4 --to-release-image=utility.ocp.example.com:5000/ocp4/openshift4:4.3.21-x86_64 --loglevel 7 && /opt/html/oc adm -a /opt/auth/pullsecret.json release extract --to=/opt/html/ --command=openshift-install "utility.ocp.example.com:5000/ocp4/openshift4:4.3.21-x86_64"'
+        ExecStart=/bin/podman run --name install-prep-service --net host -v /etc/pki/ca-trust/extracted/:/etc/pki/ca-trust/extracted/:z -v /opt/services/registry/auth:/opt/auth:z -v /opt/services/httpd/www/html:/opt/html:z quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/bash -c '/opt/html/oc adm -a /opt/auth/pullsecret.json release mirror --from=quay.io/openshift-release-dev/ocp-release:4.3.21-x86_64 --to=utility.ocp.example.com:5000/ocp4/openshift4 --to-release-image=utility.ocp.example.com:5000/ocp4/openshift4:4.3.21-x86_64 --loglevel 7'
         [Install]
         WantedBy=multi-user.target
 ...
