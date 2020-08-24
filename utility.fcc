@@ -33,6 +33,18 @@ storage:
         name: core
       group:
         name: core
+    - path: /opt/services/artifactory/var
+      mode: 0755
+      user:
+        id: 1030
+      group:
+        id: 1030
+    - path: /opt/services/artifactory/var/etc
+      mode: 0755
+      user:
+        id: 1030
+      group:
+        id: 1030
   files:
     - path: /etc/hostname
       overwrite: true
@@ -312,12 +324,138 @@ storage:
                       3H )            ; minimum
           @	IN	NS	dns.
           53	IN	PTR	dns.example.com.
-          100	IN	PTR	bootstrap.ocp.example.com.
+          100	IN	PTR	bootstrap-0.ocp.example.com.
           110	IN	PTR	master-0.ocp.example.com.
           111	IN	PTR	master-1.ocp.example.com.
           112	IN	PTR	master-2.ocp.example.com.
           120	IN	PTR	worker-0.ocp.example.com.
           121	IN	PTR	worker-1.ocp.example.com.
+    - path: /opt/services/proxy/squid.conf
+      mode: 0644
+      overwrite: true
+      user:
+        name: core
+      contents:
+        inline: |
+          # Recommended minimum configuration:
+          #
+
+          # Example rule allowing access from your local networks.
+          # Adapt to list your (internal) IP networks from where browsing
+          # should be allowed
+          acl localnet src 0.0.0.1-0.255.255.255	# RFC 1122 "this" network (LAN)
+          acl localnet src 10.0.0.0/8		# RFC 1918 local private network (LAN)
+          acl localnet src 100.64.0.0/10		# RFC 6598 shared address space (CGN)
+          acl localnet src 169.254.0.0/16 	# RFC 3927 link-local (directly plugged) machines
+          acl localnet src 172.16.0.0/12		# RFC 1918 local private network (LAN)
+          acl localnet src 192.168.0.0/16		# RFC 1918 local private network (LAN)
+          acl localnet src fc00::/7       	# RFC 4193 local private network range
+          acl localnet src fe80::/10      	# RFC 4291 link-local (directly plugged) machines
+
+          acl SSL_ports port 443
+          acl Safe_ports port 80		# http
+          acl Safe_ports port 21		# ftp
+          acl Safe_ports port 443		# https
+          acl Safe_ports port 70		# gopher
+          acl Safe_ports port 210		# wais
+          acl Safe_ports port 1025-65535	# unregistered ports
+          acl Safe_ports port 280		# http-mgmt
+          acl Safe_ports port 488		# gss-http
+          acl Safe_ports port 591		# filemaker
+          acl Safe_ports port 777		# multiling http
+          acl CONNECT method CONNECT
+
+          #
+          # Recommended minimum Access Permission configuration:
+          #
+          # Deny requests to certain unsafe ports
+          http_access deny !Safe_ports
+
+          # Deny CONNECT to other than secure SSL ports
+          http_access deny CONNECT !SSL_ports
+
+          # Only allow cachemgr access from localhost
+          http_access allow localhost manager
+          http_access deny manager
+
+          # We strongly recommend the following be uncommented to protect innocent
+          # web applications running on the proxy server who think the only
+          # one who can access services on "localhost" is a local user
+          #http_access deny to_localhost
+
+          # Example rule allowing access from your local networks.
+          # Adapt localnet in the ACL section to list your (internal) IP networks
+          # from where browsing should be allowed
+          http_access allow localnet
+          http_access allow localhost
+
+          # And finally deny all other access to this proxy
+          http_access deny all
+
+          # Squid normally listens to port 3128
+          http_port 3128
+
+          # Uncomment and adjust the following to add a disk cache directory.
+          #cache_dir ufs /var/spool/squid 100 16 256
+
+          # Leave coredumps in the first cache dir
+          coredump_dir /var/spool/squid
+
+          #
+          # Add any of your own refresh_pattern entries above these.
+          #
+          refresh_pattern ^ftp:		1440	20%	10080
+          refresh_pattern ^gopher:	1440	0%	1440
+          refresh_pattern -i (/cgi-bin/|\?) 0	0%	0
+          refresh_pattern .		0	20%	4320
+    - path: /opt/services/nginx/nginx.conf
+      overwrite: true
+      user:
+        name: core
+      contents:
+        inline: |
+          events{}                                                                                                                                                                                      
+          http{                                                                                                                                                                                         
+              server {                                                                                                                                                                                  
+                  listen 9443 ssl;                                                                                                                                                                      
+                  ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;                                                                                                                                          
+                  ssl_certificate      /etc/nginx/ssl/fullchain.pem;                                                                                                                                    
+                  ssl_certificate_key  /etc/nginx/ssl/privkey.pem;                                                                                                                                      
+                  ssl_session_cache shared:SSL:1m;                                                                                                                                                      
+                  ssl_prefer_server_ciphers   on;                                                                                                                                                       
+                                                                                                                                                                                                        
+                  server_name example.com;                                                                                                                                                             
+                  if ($http_x_forwarded_proto = '') {                                                                                                                                                   
+                      set $http_x_forwarded_proto  $scheme;                                                                                                                                             
+                  }
+                  ## Application specific logs
+                  ## access_log /var/log/nginx/example.com-access.log timing;
+                  ## error_log /var/log/nginx/example.com-error.log;
+                  rewrite ^/$ /ui/ redirect;
+                  rewrite ^/ui$ /ui/ redirect;
+                  chunked_transfer_encoding on;
+                  client_max_body_size 0;
+                  location / {
+                  proxy_read_timeout  2400s;
+                  proxy_pass_header   Server;
+                  proxy_cookie_path   ~*^/.* /;
+                  proxy_buffer_size 128k;
+                  proxy_buffers 40 128k;
+                  proxy_busy_buffers_size 128k;
+                  proxy_pass          http://utility.ocp.example.com:8082;
+                  proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host:$server_port;
+                  proxy_set_header    X-Forwarded-Port  $server_port;
+                  proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+                  proxy_set_header    Host              $http_host;
+                  proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
+
+                      location ~ ^/artifactory/ {
+                          proxy_pass    http://utility.ocp.example.com:8081;
+                      }
+                  }
+              }
+          }
+      mode: 0644
     - path: "/etc/NetworkManager/system-connections/Wired connection 2.nmconnection"
       mode: 0600
       overwrite: true
@@ -372,7 +510,15 @@ storage:
         name: core
       contents:
         inline: |
-          ***REMOVED***
+      mode: 0744
+    - path: /opt/services/artifactory/var/etc/system.yaml
+      overwrite: true
+      user:
+        id: 1030
+      group:
+        id: 1030
+      contents:
+        inline: ""
       mode: 0744
 passwd:
   users:
@@ -482,39 +628,48 @@ systemd:
         ExecStart=/bin/podman run --name tarball-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.8/rhcos-4.3.8-x86_64-metal.x86_64.raw.gz -o /opt/rhcos-4.3.8-x86_64-metal.x86_64.raw.gz
         [Install]
         WantedBy=multi-user.target
-    - name: image-mirror.service
+    - name: artifactory-container.service
       enabled: true
       contents: |
         [Unit]
-        Description=Image-mirror-container
+        Description=Artifactory-container
         After=named-container.service
         Wants=network-online.target
         [Service]
         TimeoutStartSec=0
-        ExecStartPre=-/bin/podman kill image-mirror-service
-        ExecStartPre=-/bin/podman rm image-mirror-service
-        ExecStartPre=/bin/bash -c 'test -s /opt/services/registry/certs/domain.key && test -s /opt/services/registry/certs/domain.key || /bin/openssl req -newkey rsa:4096 -nodes -sha256 -keyout /opt/services/registry/certs/domain.key -x509 -days 365 -out /opt/services/registry/certs/domain.crt -subj "/C=SE/ST=Stockholm/L=Stockholm/O=Red Hat/OU=Consulting/CN=utility.ocp.example.com/emailAddress=admin@ocp.example.com.com"'
-        ExecStartPre=/bin/bash -c '/bin/cp /opt/services/registry/certs/domain.crt /opt/services/httpd/www/html/'
-        ExecStart=/bin/podman run --name image-mirror-service -p 5000:5000 --net host -v /opt/services/registry/data:/var/lib/registry:z -v /opt/services/registry/auth:/auth:z -e "REGISTRY_AUTH=htpasswd" -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd -v /opt/services/registry/certs:/certs:z -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key docker.io/library/registry:2
+        ExecStartPre=-/bin/podman kill artifactory-service
+        ExecStartPre=-/bin/podman rm -f artifactory-service
+        ExecStart=/bin/podman run --name artifactory-service -v /opt/services/artifactory/var/:/var/opt/jfrog/artifactory:Z -d -p 8081:8081 -p 8082:8082 docker.bintray.io/jfrog/artifactory-pro:latestdocker.bintray.io/jfrog/artifactory-pro:latest
         ExecStartPost=/bin/sleep 15
         [Install]
         WantedBy=multi-user.target
-    - name: install-prep.service
+    - name: nginx.service
       enabled: true
       contents: |
         [Unit]
-        Description=Install-prep-container
-        After=image-mirror.service
-        After=client-downloader-container.service
+        Description=nginx-container
+        After=artifactory-container.service
         Wants=network-online.target
         [Service]
         TimeoutStartSec=0
-        ExecStartPre=-/bin/podman kill install-prep-service
-        ExecStartPre=-/bin/podman rm install-prep-service
-        ExecStartPre=/bin/bash -c '/bin/cp /opt/services/registry/certs/domain.crt /etc/pki/ca-trust/source/anchors/ && /bin/update-ca-trust'
-        ExecStartPre=/bin/curl -v -s -u ocp:ocp https://utility.ocp.example.com:5000/v2/_catalog
-        ExecStartPre=/bin/bash -c "/bin/jq '.auths += {\"utility.ocp.example.com:5000\":{\"auth\":\"b2NwOm9jcA==\",\"email\":\"admin@ocp.example.com\"}}' /opt/services/registry/auth/pullsecret_rh.json | /bin/tee /opt/services/registry/auth/pullsecret.json"
-        ExecStart=/bin/podman run --name install-prep-service --net host -v /etc/pki/ca-trust/extracted/:/etc/pki/ca-trust/extracted/:z -v /opt/services/registry/auth:/opt/auth:z -v /opt/services/httpd/www/html:/opt/html:z quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/bash -c '/opt/html/oc adm -a /opt/auth/pullsecret.json release mirror --from=quay.io/openshift-release-dev/ocp-release:4.3.21-x86_64 --to=utility.ocp.example.com:5000/ocp4/openshift4 --to-release-image=utility.ocp.example.com:5000/ocp4/openshift4:4.3.21-x86_64 --loglevel 7'
+        ExecStartPre=-/bin/podman kill nginx-service
+        ExecStartPre=-/bin/podman rm -f nginx-service
+        ExecStart=/bin/podman run --network host --name nginx-service -v /opt/services/nginx/nginx.conf:/etc/nginx/nginx.conf:ro -v /opt/services/nginx/ssl:/etc/nginx/ssl:Z -p 9443:9443 -d nginxdocker.bintray.io/jfrog/artifactory-pro:latestdocker.bintray.io/jfrog/artifactory-pro:latest
+        [Install]
+        WantedBy=multi-user.target
+    - name: proxy.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=proxy-container
+        After=named-container.service
+        Wants=network-online.target
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill proxy-service
+        ExecStartPre=-/bin/podman rm proxy-service
+        ExecStart=/bin/podman run --name proxy-service -p 3128:3128 --net host -v /opt/services/proxy/squid.conf:/etc/squid/squid.conf:Z quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/squid --foreground
+        ExecStartPost=/bin/sleep 15
         [Install]
         WantedBy=multi-user.target
 ...
