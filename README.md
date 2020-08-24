@@ -24,7 +24,7 @@ ovs-vsctl add-br ovsbr
 
 Download Fedora CoreOS:
 ```bash
-curl https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/31.20200118.3.0/x86_64/fedora-coreos-31.20200118.3.0-qemu.x86_64.qcow2.xz -o /var/lib/libvirt/images/fedora-coreos-31.20200113.3.1-qemu.x86_64.qcow2.xz && xz --decompress /var/lib/libvirt/images/fedora-coreos-31.20200113.3.1-qemu.x86_64.qcow2.xz
+curl https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/32.20200726.3.1/x86_64/fedora-coreos-32.20200726.3.1-qemu.x86_64.qcow2.xz -o /var/lib/libvirt/images/fedora-coreos-32.20200726.3.1-qemu.x86_64.qcow2.xz && xz --decompress /var/lib/libvirt/images/fedora-coreos-32.20200726.3.1-qemu.x86_64.qcow2.xz
 ```
 
 Add your pull secret to `.storage.files.$11` and your host's SSH key to `passwd.users.$0.ssh_authorized_keys` in `utility.fcc`.  
@@ -35,7 +35,7 @@ fcct -strict -pretty < utility.fcc > /var/lib/libvirt/images/utility.ign
 
 Start Fedora CoreOS with the ignition config:
 ```bash
-virt-install --connect qemu:///system --import --name utility.ocp.example.com --network network=ocp4,mac=12:34:56:00:00:53 --network bridge=ovsbr,mac=12:34:56:00:00:54,virtualport_type=openvswitch --ram 1024 --vcpus 1 --os-variant fedora29 --disk size=50,backing_store=/var/lib/libvirt/images/fedora-coreos-31.20200113.3.1-qemu.x86_64.qcow2,format=qcow2,bus=virtio --qemu-commandline="-fw_cfg name=opt/com.coreos/config,file=/var/lib/libvirt/images/utility.ign" --vnc --noautoconsole
+virt-install --connect qemu:///system --import --name utility.ocp.example.com --network network=ocp4,mac=12:34:56:00:00:53 --network bridge=ovsbr,mac=12:34:56:00:00:54,virtualport_type=openvswitch --ram 1024 --vcpus 1 --os-variant fedora29 --disk size=50,backing_store=/var/lib/libvirt/images/fedora-coreos-32.20200726.3.1-qemu.x86_64.qcow2,format=qcow2,bus=virtio --qemu-commandline="-fw_cfg name=opt/com.coreos/config,file=/var/lib/libvirt/images/utility.ign" --vnc --noautoconsole
 ```
 When the utility node is up, you can start preparing the OpenShift installation.  
 
@@ -43,7 +43,7 @@ When the utility node is up, you can start preparing the OpenShift installation.
 ## Prepare the installer
 Prepare RHCOS images for the install in the `iso_rhcos` directory.
 ```bash
-wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.8/rhcos-4.3.8-x86_64-installer.x86_64.iso https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.8/rhcos-4.3.8-x86_64-installer-kernel-x86_64 https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.8/rhcos-4.3.8-x86_64-installer-initramfs.x86_64.img -N -P ./iso_rhcos/
+wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/latest/rhcos-installer.x86_64.iso https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/latest/rhcos-installer-kernel-x86_64 https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/latest/rhcos-installer-initramfs.x86_64.img -N -P ./iso_rhcos/
 ```
 Download the extracted installer to the host:  
 ```bash
