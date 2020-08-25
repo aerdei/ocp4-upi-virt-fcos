@@ -412,7 +412,7 @@ storage:
           [connection]
           type=802-3-ethernet
           autoconnect-priority=-999
-          interface-name=eth1
+          interface-name=enp2s0
           permissions=
           autoconnect=true
           id=Wired connection 2
@@ -428,7 +428,7 @@ storage:
           dns-search=
           method=auto
           [proxy]
-    - path: /etc/NetworkManager/dispatcher.d/01-eth1-route
+    - path: /etc/NetworkManager/dispatcher.d/01-enp2s0-route
       mode: 0744
       overwrite: true
       user:
@@ -438,9 +438,9 @@ storage:
           #!/usr/bin/env bash
           interface=$1
           event=$2
-          if [[ $interface != "eth1" ]] && [[ $event != "up" ]]
+          if [[ $interface != "enp2s0" ]] && [[ $event != "up" ]]
           then
-            route add -net 192.168.155.0/24 dev eth1
+            route add -net 192.168.155.0/24 dev enp2s0
           fi
     - path: /opt/services/registry/auth/htpasswd
       mode: 0744
@@ -507,7 +507,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill dhcpd-service
         ExecStartPre=-/bin/podman rm dhcpd-service
-        ExecStart=/bin/podman run --name dhcpd-service -v /opt/services/dhcpd/:/opt/:z --net host -p 67:67 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/dhcpd -4 -f -d --no-pid -cf "/opt/dhcpd.conf" eth1
+        ExecStart=/bin/podman run --name dhcpd-service -v /opt/services/dhcpd/:/opt/:z --net host -p 67:67 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/dhcpd -4 -f -d --no-pid -cf "/opt/dhcpd.conf" enp2s0
         [Install]
         WantedBy=multi-user.target
     - name: named-container.service
