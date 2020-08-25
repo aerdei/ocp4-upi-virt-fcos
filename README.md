@@ -1,4 +1,4 @@
-## OpenShift 4.3 UPI disconnected on Libvirt with a Fedora CoreOS utility node
+## OpenShift 4.5 UPI disconnected on Libvirt with a Fedora CoreOS utility node
 
 ![Diagram](diagram.svg)
 
@@ -39,7 +39,7 @@ virt-install --connect qemu:///system --import --name utility.ocp.example.com --
 ```
 When the utility node is up, you can start preparing the OpenShift installation.  
 
-# Deploy OpenShift 4.3
+# Deploy OpenShift 4.5
 ## Prepare the installer
 Prepare RHCOS images for the install in the `iso_rhcos` directory.
 ```bash
@@ -48,7 +48,7 @@ wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/latest
 Download the extracted installer to the host:  
 ```bash
 curl http://192.168.122.53:8080/openshift-install -o openshift-install
-chmod +x ./openshift-install
+chmod u+x ./openshift-install
 ```
 Configure `install-config.yaml` in the `cluster` directory.  
 Create installer files and upload them to the utility VM:
@@ -61,7 +61,7 @@ rsync -Pavr --chmod=o+r ./cluster/* core@192.168.122.53:/opt/services/httpd/www/
 ## Deploy nodes
 Deploy bootstrap node:
 ```bash
-bash deploy.sh bootstrap
+bash deploy.sh bootstrap example.com
 ```
 Note that you need to manually start all the nodes as they will not automatically reboot:
 ```bash
@@ -69,13 +69,13 @@ bash start.sh
 ```
 When the bootstrap node is up, deploy the masters:
 ```bash
-bash deploy.sh masters
+bash deploy.sh masters example.com
 ```
 When the masters are up and the bootstrap process is complete, you are ready to destroy the bootstrap node and deploy the worker nodes:
 ```bash
-virsh destroy bootstrap.ocp.example.com
-virsh undefine bootstrap.ocp.example.com --remove-all-storage
-bash deploy.sh workers
+virsh destroy bootstrap-0.ocp.example.com
+virsh undefine bootstrap-0.ocp.example.com --remove-all-storage
+bash deploy.sh workers example.com
 ```
 Make sure to approve any CSRs that are generated while provisioning the workers:
 ```bash
@@ -87,5 +87,5 @@ oc get csr -o go-template --template='{{range .items}}{{if  not .status}}{{print
 To destroy and undefine every virtual machine related to this cluster, run `cleanup.sh`. 
 
 # Known issues
-- At startup, Fedora CoreOS will request IPs through DHCP on both of its interfaces. This should work on `eth0`, but a timeout must happen on `eth1` for the boot process to continue.
+- At startup, Fedora CoreOS will request IPs through DHCP on both of its interfaces. This should work on `enp1s0`, but a timeout must happen on `enp2s0` for the boot process to continue.
 - RHCOS machines configured with virt-install currently don't reboot automatically. You need to invoke `start.sh` once they are in a shut down state.
