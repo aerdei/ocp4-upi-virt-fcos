@@ -3,7 +3,7 @@ baseDomain: example.com
 proxy:
   httpProxy: http://utility.ocp.example.com:3128
   httpsProxy: http://utility.ocp.example.com:3128
-  noProxy: example.com 
+  noProxy: example.com,192.168.155.0/24
 compute:
 - hyperthreading: Enabled
   name: worker
