@@ -228,6 +228,25 @@ storage:
             fixed-address 192.168.155.121;
             option host-name "worker-1.ocp.example.com";
           }
+    - path: /etc/chrony.conf
+      mode: 0644
+      overwrite: true
+      user:
+        name: core
+      contents:
+        inline: |
+          server ntp1.hetzner.de  iburst
+          server ntp2.hetzner.com iburst
+          server ntp3.hetzner.net iburst
+          driftfile /var/lib/chrony/drift
+          makestep 1.0 3
+          rtcsync
+          allow 192.168.0.0/16
+          local stratum 3
+          keyfile /etc/chrony.keys
+          leapsectz right/UTC
+          logdir /var/log/chrony
+          maxdistance 10
     - path: /opt/services/named/named.conf
       mode: 0644
       overwrite: true
