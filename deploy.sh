@@ -26,5 +26,5 @@ case ${1} in
 esac
 
 for i in $(seq 0 ${num}); do
-	virt-install --autostart --graphics=none --noautoconsole --network bridge=ovsbr,mac=12:34:56:00:00:"${mac}${i}",virtualport_type=openvswitch --os-type=rhel8.0 --location=iso_rhcos --file=/var/lib/libvirt/images/"${ign}"-"${i}".ocp."${domain}" --file-size="${storage}"  --memory="${memory}" --vcpus="${vcpus}" --name="${ign}"-"${i}".ocp."${domain}" --extra-args="rd.neednet=1 ip=dhcp coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://utility.ocp.${domain}:8080/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://utility.ocp.${domain}:8080/${ign}.ign console=ttyS0"
+	virt-install --autostart --graphics=none --noautoconsole --network bridge=ovsbr,mac=12:34:56:00:00:"${mac}${i}",virtualport_type=openvswitch --os-type=rhel8.0 --location=iso_rhcos --file=/var/lib/libvirt/images/"${ign}"-"${i}".ocp."${domain}" --file-size="${storage}"  --memory="${memory}" --vcpus="${vcpus}" --name="${ign}"-"${i}".ocp."${domain}" --extra-args="coreos.inst.install_dev=vda coreos.live.rootfs_url=http://utility.ocp.${domain}:8080/rhcos-live-rootfs.x86_64.img coreos.inst.ignition_url=http://utility.ocp.${domain}:8080/${ign}.ign console=ttyS0"
 done

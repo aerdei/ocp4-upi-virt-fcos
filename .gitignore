@@ -11,3 +11,4 @@ cluster/
 iso_rhcos/
 !iso_rhcos/.treeinfo
 install-config.yaml
+*.ign

@@ -256,7 +256,7 @@ storage:
         inline: |
           options {
                   listen-on port 53 { any; };
-                  forwarders { 192.168.122.1; };
+                  forwarders { 192.168.123.1; };
                   directory       "/var/named";
                   dump-file       "/var/named/data/cache_dump.db";
                   statistics-file "/var/named/data/named_stats.txt";
@@ -526,7 +526,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill dhcpd-service
         ExecStartPre=-/bin/podman rm dhcpd-service
-        ExecStart=/bin/podman run --name dhcpd-service -v /opt/services/dhcpd/:/opt/:z --net host -p 67:67 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/dhcpd -4 -f -d --no-pid -cf "/opt/dhcpd.conf" enp2s0
+        ExecStart=/bin/podman run --privileged --name dhcpd-service -v /opt/services/dhcpd/:/opt/:z --net host -p 67:67 quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/sbin/dhcpd -4 -f -d --no-pid -cf "/opt/dhcpd.conf" enp2s0
         [Install]
         WantedBy=multi-user.target
     - name: named-container.service
@@ -554,7 +554,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill client-downloader-service
         ExecStartPre=-/bin/podman rm client-downloader-service
-        ExecStart=/bin/podman run --name client-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable-4.5/openshift-client-linux.tar.gz | /usr/bin/tar -xvz -C /opt/'
+        ExecStart=/bin/podman run --name client-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable-4.6/openshift-client-linux.tar.gz | /usr/bin/tar -xvz -C /opt/'
         [Install]
         WantedBy=multi-user.target
     - name: installer-downloader-container.service
@@ -568,7 +568,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill installer-downloader-service
         ExecStartPre=-/bin/podman rm installer-downloader-service
-        ExecStart=/bin/podman run --name installer-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable-4.5/openshift-install-linux.tar.gz | /usr/bin/tar -xvz -C /opt/'
+        ExecStart=/bin/podman run --name installer-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/bash -c '/usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable-4.6/openshift-install-linux.tar.gz | /usr/bin/tar -xvz -C /opt/'
         [Install]
         WantedBy=multi-user.target
     - name: tarball-downloader-container.service
@@ -582,7 +582,7 @@ systemd:
         TimeoutStartSec=0
         ExecStartPre=-/bin/podman kill tarball-downloader-service
         ExecStartPre=-/bin/podman rm tarball-downloader-service
-        ExecStart=/bin/podman run --name tarball-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/latest/rhcos-metal.x86_64.raw.gz -o /opt/rhcos-metal.x86_64.raw.gz
+        ExecStart=/bin/podman run --name tarball-downloader-service -v /opt/services/httpd/www/html:/opt/:z --net host quay.io/aerdei-redhat.com/fedora-toolkit:v0.0.2 /usr/bin/curl -v https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/latest/rhcos-live-rootfs.x86_64.img -o /opt/rhcos-live-rootfs.x86_64.img
         [Install]
         WantedBy=multi-user.target
     - name: proxy.service
